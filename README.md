@@ -28,7 +28,7 @@ One-time setup (~10 minutes), in [Google Cloud Console](https://console.cloud.go
 4. **APIs & Services → Credentials → Create Credentials → OAuth client ID** → Application type: **Web application**.
 5. Under **Authorized JavaScript origins**, add:
    - `http://localhost:8000` (for local use)
-   - `https://YOUR_GITHUB_USERNAME.github.io` (for the hosted version — see below)
+   - `https://achernyshova.github.io` (for the hosted version — see below)
 6. Copy the **Client ID** it gives you (looks like `123...apps.googleusercontent.com`).
 7. In the app, open the design panel, paste the Client ID under "Google Calendar", click **Connect**, and approve access in the popup.
 
@@ -36,11 +36,9 @@ The Client ID is not a secret (it's safe to be public) — it's saved to this br
 
 ## Deploy for free (GitHub Pages)
 
-This repo is set up to serve straight from the `main` branch via GitHub Pages:
+This repo serves straight from the `main` branch via GitHub Pages:
 
-```
-https://YOUR_GITHUB_USERNAME.github.io/REPO_NAME/
-```
+**https://achernyshova.github.io/weekly-planner/**
 
 Push to `main` and it updates automatically within a minute or two.
 
