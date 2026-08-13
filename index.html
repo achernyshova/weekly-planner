@@ -1,0 +1,1650 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Weekly Planner</title>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<style>
+  :root{
+    --bg: #edeae1;
+    --surface: #fbfaf6;
+    --surface-2: #f2efe6;
+    --ink: #2a2924;
+    --ink-soft: #726d61;
+    --ink-faint: #a49d8c;
+    --line: #d9d2c1;
+    --line-soft: #e6e0d2;
+    --accent: #3d5346;
+    --accent-ink: #f5f7f4;
+    --accent-soft: #dde5da;
+    --accent-soft-line: #c3d0be;
+    --highlight: #c97a3a;
+    --highlight-soft: #f2e0cd;
+    --done: #a49d8c;
+    --danger: #a5473a;
+    --shadow: 0 1px 2px rgba(42,41,36,0.06), 0 6px 16px -8px rgba(42,41,36,0.18);
+    --radius-s: 6px;
+    --radius-m: 10px;
+    --radius-l: 14px;
+    --font-display: Georgia, "Iowan Old Style", "Palatino Linotype", Palatino, serif;
+    --font-body: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --font-mono: ui-monospace, "SF Mono", "Cascadia Mono", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg: #1b1c18;
+      --surface: #232420;
+      --surface-2: #292a24;
+      --ink: #eae6db;
+      --ink-soft: #a49d8c;
+      --ink-faint: #706b5c;
+      --line: #3a3a32;
+      --line-soft: #303029;
+      --accent: #8caa96;
+      --accent-ink: #16201a;
+      --accent-soft: #26332a;
+      --accent-soft-line: #37493d;
+      --highlight: #d99a5c;
+      --highlight-soft: #3a2e1e;
+      --done: #706b5c;
+      --danger: #d08677;
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 20px -10px rgba(0,0,0,0.5);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg: #1b1c18;
+    --surface: #232420;
+    --surface-2: #292a24;
+    --ink: #eae6db;
+    --ink-soft: #a49d8c;
+    --ink-faint: #706b5c;
+    --line: #3a3a32;
+    --line-soft: #303029;
+    --accent: #8caa96;
+    --accent-ink: #16201a;
+    --accent-soft: #26332a;
+    --accent-soft-line: #37493d;
+    --highlight: #d99a5c;
+    --highlight-soft: #3a2e1e;
+    --done: #706b5c;
+    --danger: #d08677;
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 20px -10px rgba(0,0,0,0.5);
+  }
+
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--ink);
+    font-family:var(--font-body);
+    -webkit-font-smoothing:antialiased;
+  }
+  ::selection{ background:var(--accent-soft); }
+  button{ font-family:inherit; }
+  input{ font-family:inherit; color:inherit; }
+
+  .shell{
+    max-width:1320px;
+    margin:0 auto;
+    padding:28px 24px 64px;
+  }
+
+  /* ---------- header ---------- */
+  .topbar{
+    display:flex;
+    align-items:flex-end;
+    justify-content:space-between;
+    gap:20px;
+    padding-bottom:14px;
+    border-bottom:2px solid var(--ink);
+    margin-bottom:22px;
+    flex-wrap:wrap;
+  }
+  .brand{
+    font-family:var(--font-display);
+    font-size:15px;
+    letter-spacing:0.14em;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+    margin:0 0 4px;
+  }
+  .week-heading{
+    font-family:var(--font-display);
+    font-size:30px;
+    margin:0;
+    text-wrap:balance;
+  }
+  .week-nav{
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  .nav-btn{
+    width:34px; height:34px;
+    border-radius:50%;
+    border:1px solid var(--line);
+    background:var(--surface);
+    color:var(--ink);
+    font-size:16px;
+    cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+    transition:background .12s ease, border-color .12s ease;
+  }
+  .nav-btn:hover{ background:var(--surface-2); border-color:var(--ink-faint); }
+  .nav-btn:focus-visible, .today-btn:focus-visible, .icon-btn:focus-visible, .chip:focus-visible, input:focus-visible, .add-input:focus-visible{
+    outline:2px solid var(--accent); outline-offset:2px;
+  }
+  .today-btn{
+    height:34px;
+    padding:0 14px;
+    border-radius:17px;
+    border:1px solid var(--accent-soft-line);
+    background:var(--accent-soft);
+    color:var(--accent);
+    font-weight:600;
+    font-size:13px;
+    cursor:pointer;
+  }
+  .today-btn:hover{ filter:brightness(0.97); }
+
+  /* ---------- layout ---------- */
+  .layout{
+    display:grid;
+    grid-template-columns:272px 1fr;
+    gap:20px;
+  }
+  @media (max-width:900px){
+    .layout{ grid-template-columns:1fr; }
+  }
+
+  .sidebar{ display:flex; flex-direction:column; gap:16px; }
+
+  .card{
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:var(--radius-l);
+    padding:16px 16px 14px;
+    box-shadow:var(--shadow);
+  }
+  .card-title{
+    font-family:var(--font-display);
+    font-size:13px;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+    margin:0 0 12px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+  }
+  .card-title .count{
+    font-family:var(--font-mono);
+    font-variant-numeric:tabular-nums;
+    font-size:11px;
+    color:var(--ink-faint);
+    letter-spacing:0;
+    text-transform:none;
+  }
+
+  /* ---------- list rows (priorities / todos) ---------- */
+  .row{
+    display:flex;
+    align-items:flex-start;
+    gap:9px;
+    padding:6px 0;
+    border-bottom:1px solid var(--line-soft);
+  }
+  .row:last-of-type{ border-bottom:none; }
+  .priority-rows .row{ align-items:center; }
+
+  .check{
+    flex:0 0 auto;
+    width:17px; height:17px;
+    margin-top:2px;
+    border-radius:5px;
+    border:1.5px solid var(--ink-faint);
+    background:transparent;
+    cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+    color:var(--accent-ink);
+    transition:background .12s ease, border-color .12s ease;
+  }
+  .check.checked{ background:var(--accent); border-color:var(--accent); }
+  .check svg{ width:11px; height:11px; opacity:0; }
+  .check.checked svg{ opacity:1; }
+
+  .priority-index{
+    flex:0 0 auto;
+    width:17px;
+    text-align:center;
+    font-family:var(--font-mono);
+    font-size:12px;
+    color:var(--ink-faint);
+  }
+
+  .row-text{
+    flex:1 1 auto;
+    border:none;
+    background:transparent;
+    font-size:14px;
+    color:var(--ink);
+    padding:2px 0;
+    min-width:0;
+  }
+  .row-text::placeholder{ color:var(--ink-faint); }
+  .row-text.done{ color:var(--done); text-decoration:line-through; text-decoration-color:var(--ink-faint); }
+
+  .row-remove{
+    flex:0 0 auto;
+    width:20px; height:20px;
+    border:none;
+    background:transparent;
+    color:var(--ink-faint);
+    cursor:pointer;
+    border-radius:5px;
+    font-size:15px;
+    line-height:1;
+    opacity:0;
+    transition:opacity .12s ease, color .12s ease, background .12s ease;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .row:hover .row-remove, .row-remove:focus-visible{ opacity:1; }
+  .row-remove:hover{ color:var(--danger); background:var(--surface-2); }
+
+  .daychips{
+    flex:0 0 auto;
+    display:flex;
+    gap:3px;
+  }
+  .chip{
+    width:18px; height:18px;
+    border-radius:5px;
+    border:1px solid var(--line);
+    background:var(--surface-2);
+    color:var(--ink-faint);
+    font-family:var(--font-mono);
+    font-size:9.5px;
+    font-weight:600;
+    cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+    transition:all .12s ease;
+  }
+  .chip:hover{ border-color:var(--ink-faint); }
+  .chip.on{
+    background:var(--highlight);
+    border-color:var(--highlight);
+    color:var(--accent-ink);
+  }
+  .chip.today-col{ box-shadow:0 0 0 1px var(--accent) inset; }
+
+  .add-row{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    padding-top:8px;
+    margin-top:4px;
+  }
+  .add-row.bordered{ border-top:1px dashed var(--line); }
+  .add-glyph{ color:var(--ink-faint); font-size:14px; flex:0 0 auto; width:17px; text-align:center; }
+  .add-input{
+    flex:1 1 auto;
+    border:none;
+    background:transparent;
+    font-size:13.5px;
+    color:var(--ink);
+    padding:3px 0;
+  }
+  .add-input::placeholder{ color:var(--ink-faint); }
+
+  .empty-hint{
+    font-size:12.5px;
+    color:var(--ink-faint);
+    font-style:italic;
+    padding:2px 0 6px;
+  }
+
+  /* ---------- habits ---------- */
+  .habit-head{
+    display:grid;
+    grid-template-columns:1fr repeat(7, 20px);
+    gap:4px;
+    padding-bottom:6px;
+    margin-bottom:4px;
+    border-bottom:1px solid var(--line-soft);
+  }
+  .habit-head span{
+    font-family:var(--font-mono);
+    font-size:9.5px;
+    color:var(--ink-faint);
+    text-align:center;
+  }
+  .habit-row{
+    display:grid;
+    grid-template-columns:1fr repeat(7, 20px);
+    gap:4px;
+    align-items:center;
+    padding:5px 0;
+  }
+  .habit-name-wrap{ display:flex; align-items:center; gap:6px; min-width:0; }
+  .habit-name{
+    border:none; background:transparent; font-size:13.5px; color:var(--ink);
+    padding:2px 0; min-width:0; width:100%;
+  }
+  .habit-name::placeholder{ color:var(--ink-faint); }
+  .habit-box{
+    width:18px; height:18px;
+    border-radius:5px;
+    border:1.5px solid var(--ink-faint);
+    background:transparent;
+    cursor:pointer;
+    justify-self:center;
+  }
+  .habit-box.on{ background:var(--accent); border-color:var(--accent); }
+  .habit-box.on.today-col{ box-shadow:0 0 0 2px var(--accent-soft); }
+
+  /* ---------- week grid ---------- */
+  .week-grid{
+    display:grid;
+    grid-template-columns:repeat(7, 1fr);
+    gap:12px;
+  }
+  @media (max-width:1080px){
+    .week-grid{ grid-template-columns:repeat(auto-fit, minmax(150px,1fr)); }
+  }
+
+  .day-card{
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:var(--radius-l);
+    box-shadow:var(--shadow);
+    display:flex;
+    flex-direction:column;
+    min-height:360px;
+  }
+  .day-card.is-today{
+    border-color:var(--accent-soft-line);
+    background:linear-gradient(var(--surface), var(--surface));
+    box-shadow:var(--shadow), 0 0 0 1.5px var(--accent);
+  }
+  .day-head{
+    padding:12px 12px 10px;
+    border-bottom:1px solid var(--line-soft);
+  }
+  .day-name{
+    font-family:var(--font-display);
+    font-size:15px;
+    font-weight:700;
+    margin:0;
+  }
+  .is-today .day-name{ color:var(--accent); }
+  .day-date{
+    font-family:var(--font-mono);
+    font-variant-numeric:tabular-nums;
+    font-size:11px;
+    color:var(--ink-faint);
+    margin-top:2px;
+  }
+  .today-pill{
+    display:inline-block;
+    margin-left:6px;
+    font-family:var(--font-mono);
+    font-size:9px;
+    letter-spacing:.06em;
+    color:var(--accent-ink);
+    background:var(--accent);
+    padding:1px 6px;
+    border-radius:8px;
+    vertical-align:1px;
+  }
+  /* ---------- day schedule (manual calendar) ---------- */
+  .day-schedule-wrap{
+    padding:10px 12px 8px;
+    border-bottom:1px solid var(--line-soft);
+  }
+  .schedule-head{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:6px;
+  }
+  .schedule-label{
+    font-family:var(--font-mono);
+    font-size:9.5px;
+    letter-spacing:.06em;
+    text-transform:uppercase;
+    color:var(--ink-faint);
+  }
+  .schedule-add{
+    width:20px; height:20px;
+    border-radius:50%;
+    border:none;
+    background:var(--surface-2);
+    color:var(--ink-soft);
+    font-size:13px;
+    cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+    transition:background .12s ease, color .12s ease;
+  }
+  .schedule-add:hover{ background:var(--accent-soft); color:var(--accent); }
+
+  .event-list{
+    max-height:170px;
+    overflow-y:auto;
+  }
+  .event-row{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    padding:6px 4px;
+    border-radius:6px;
+    border-bottom:1px solid var(--line-soft);
+    cursor:pointer;
+    transition:background .1s ease;
+  }
+  .event-row:last-of-type{ border-bottom:none; }
+  .event-row:hover{ background:var(--surface-2); }
+  .event-row-bar{
+    flex:0 0 auto;
+    width:3px;
+    align-self:stretch;
+    border-radius:2px;
+    background:var(--accent);
+  }
+  .event-row-main{ flex:1 1 auto; min-width:0; }
+  .event-row-title{
+    display:block;
+    font-size:12.5px;
+    color:var(--ink);
+    font-weight:600;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+  .event-row-time{
+    display:block;
+    font-family:var(--font-mono);
+    font-size:9.5px;
+    color:var(--ink-soft);
+    margin-top:1px;
+  }
+
+  .event-form{
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+    padding:9px;
+    background:var(--surface-2);
+    border-radius:8px;
+    margin-top:8px;
+  }
+  .event-form-row{ display:flex; gap:6px; }
+  .event-form input[type="time"]{
+    flex:1 1 0; min-width:0;
+    border:1px solid var(--line);
+    border-radius:6px;
+    padding:4px 5px;
+    font-size:11px;
+    background:var(--surface);
+    color:var(--ink);
+  }
+  .event-form input[type="text"]{
+    border:1px solid var(--line);
+    border-radius:6px;
+    padding:5px 7px;
+    font-size:12.5px;
+    background:var(--surface);
+    color:var(--ink);
+  }
+  .event-form-actions{
+    display:flex; align-items:center; justify-content:space-between;
+  }
+  .event-form-save{
+    font-size:11.5px;
+    padding:5px 12px;
+    border-radius:6px;
+    border:1px solid var(--accent-soft-line);
+    background:var(--accent);
+    color:var(--accent-ink);
+    cursor:pointer;
+    font-weight:600;
+  }
+  .event-form-secondary{ display:flex; gap:12px; }
+  .event-form-cancel, .event-form-delete{
+    font-size:11.5px;
+    background:none;
+    border:none;
+    cursor:pointer;
+    padding:0;
+  }
+  .event-form-cancel{ color:var(--ink-faint); }
+  .event-form-delete{ color:var(--danger); }
+
+  /* ---------- day to-do strip ---------- */
+  .day-todo-wrap{
+    padding:8px 12px 10px;
+    flex:1 1 auto;
+    display:flex;
+    flex-direction:column;
+    min-height:0;
+  }
+  .day-todo-label{
+    font-family:var(--font-mono);
+    font-size:9.5px;
+    letter-spacing:.06em;
+    text-transform:uppercase;
+    color:var(--ink-faint);
+    margin-bottom:2px;
+  }
+  .day-todo-list{
+    max-height:96px;
+    overflow-y:auto;
+  }
+  .day-row{
+    display:flex;
+    align-items:flex-start;
+    gap:7px;
+    padding:5px 0;
+  }
+  .day-row .row-text{ font-size:13.5px; }
+  .day-unassign{
+    flex:0 0 auto;
+    width:18px; height:18px;
+    border:none; background:transparent;
+    color:var(--ink-faint);
+    cursor:pointer;
+    font-size:13px;
+    opacity:0;
+    border-radius:4px;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .day-row:hover .day-unassign, .day-unassign:focus-visible{ opacity:1; }
+  .day-unassign:hover{ color:var(--danger); }
+
+  .day-add{
+    margin-top:auto;
+    padding-top:6px;
+    border-top:1px dashed var(--line);
+    display:flex;
+    align-items:center;
+    gap:6px;
+  }
+  .day-add .add-input{ font-size:13px; }
+
+  footer.hint{
+    text-align:center;
+    color:var(--ink-faint);
+    font-size:12px;
+    margin-top:28px;
+  }
+
+  /* ---------- google calendar ---------- */
+  .gcal-status{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    font-size:11.5px;
+    color:var(--ink-soft);
+    margin:4px 0 8px;
+  }
+  .gcal-dot{
+    width:7px; height:7px;
+    border-radius:50%;
+    background:var(--ink-faint);
+    flex:0 0 auto;
+  }
+  .gcal-dot.connected{ background:var(--accent); }
+  .gcal-field input[type="text"]{
+    width:100%;
+    border:1px solid var(--line);
+    border-radius:6px;
+    padding:6px 8px;
+    font-size:12px;
+    background:var(--surface);
+    color:var(--ink);
+    margin-bottom:8px;
+  }
+  .gcal-actions{ display:flex; gap:6px; }
+  .gcal-actions button{
+    flex:1 1 0;
+    font-size:11.5px;
+    padding:7px;
+    border-radius:7px;
+    border:1px solid var(--line);
+    background:var(--surface-2);
+    color:var(--ink);
+    cursor:pointer;
+    font-weight:600;
+  }
+  .gcal-actions button.primary{ background:var(--accent); color:var(--accent-ink); border-color:var(--accent); }
+  .gcal-actions button:hover{ filter:brightness(0.97); }
+  .event-row.gcal{ cursor:pointer; }
+  .event-row.gcal .event-row-bar{ background:var(--highlight); }
+  .event-row.gcal .event-row-title::after{
+    content:'G';
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    width:13px; height:13px;
+    margin-left:5px;
+    border-radius:3px;
+    background:var(--highlight-soft);
+    color:var(--highlight);
+    font-family:var(--font-mono);
+    font-size:8.5px;
+    font-weight:700;
+    vertical-align:1px;
+  }
+
+  /* ---------- design panel ---------- */
+  .theme-overlay{
+    position:fixed; inset:0;
+    background:rgba(20,18,14,0.28);
+    opacity:0;
+    pointer-events:none;
+    transition:opacity .18s ease;
+    z-index:40;
+  }
+  .theme-overlay.open{ opacity:1; pointer-events:auto; }
+
+  .theme-panel{
+    position:fixed;
+    top:0; right:0;
+    height:100vh;
+    width:300px;
+    max-width:88vw;
+    background:var(--surface);
+    border-left:1px solid var(--line);
+    box-shadow:var(--shadow);
+    transform:translateX(100%);
+    transition:transform .2s ease;
+    z-index:50;
+    display:flex;
+    flex-direction:column;
+    padding:18px;
+    overflow-y:auto;
+  }
+  .theme-panel.open{ transform:translateX(0); }
+
+  .theme-panel-head{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:4px;
+  }
+  .theme-panel-title{
+    font-family:var(--font-display);
+    font-size:17px;
+    margin:0;
+  }
+  .theme-panel-close{ opacity:1; position:static; width:24px; height:24px; font-size:17px; }
+
+  .theme-hint{
+    font-size:11.5px;
+    color:var(--ink-faint);
+    line-height:1.5;
+    margin:8px 0 4px;
+  }
+
+  .theme-section{
+    padding:12px 0;
+    border-top:1px solid var(--line-soft);
+  }
+  .theme-section-title{
+    font-family:var(--font-mono);
+    font-size:10px;
+    letter-spacing:.07em;
+    text-transform:uppercase;
+    color:var(--ink-faint);
+    margin:0 0 8px;
+  }
+  .theme-field{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    padding:5px 0;
+  }
+  .theme-field label{ font-size:12.5px; color:var(--ink-soft); }
+  .theme-field input[type="color"]{
+    width:32px; height:24px;
+    padding:0;
+    border:1px solid var(--line);
+    border-radius:6px;
+    background:none;
+    cursor:pointer;
+  }
+  .theme-field select{
+    font-size:12px;
+    border:1px solid var(--line);
+    border-radius:6px;
+    padding:4px 6px;
+    background:var(--surface-2);
+    color:var(--ink);
+    cursor:pointer;
+  }
+  .theme-field input[type="range"]{
+    width:120px;
+    accent-color:var(--accent);
+  }
+
+  .theme-actions{
+    display:flex;
+    gap:8px;
+    margin-top:auto;
+    padding-top:14px;
+    border-top:1px solid var(--line-soft);
+  }
+  .theme-actions button{
+    flex:1 1 0;
+    font-size:12.5px;
+    padding:9px;
+    border-radius:8px;
+    border:1px solid var(--line);
+    background:var(--surface-2);
+    color:var(--ink);
+    cursor:pointer;
+    font-weight:600;
+  }
+  .theme-actions button.primary{
+    background:var(--accent);
+    color:var(--accent-ink);
+    border-color:var(--accent);
+  }
+  .theme-actions button:hover{ filter:brightness(0.97); }
+</style>
+</head>
+<body>
+
+<div class="shell">
+  <div class="topbar">
+    <div>
+      <p class="brand">Weekly Planner</p>
+      <h1 class="week-heading" id="weekHeading">Week</h1>
+    </div>
+    <div class="week-nav">
+      <button class="nav-btn" id="prevWeek" aria-label="Previous week">&#8592;</button>
+      <button class="today-btn" id="gotoToday">Today</button>
+      <button class="nav-btn" id="nextWeek" aria-label="Next week">&#8594;</button>
+      <button class="nav-btn" id="themeToggle" aria-label="Open design panel" title="Design panel">
+        <svg viewBox="0 0 20 20" width="16" height="16" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="5" cy="6" r="1.6" fill="currentColor"/>
+          <line x1="2" y1="6" x2="18" y2="6" stroke="currentColor" stroke-width="1.3"/>
+          <circle cx="14" cy="11" r="1.6" fill="currentColor"/>
+          <line x1="2" y1="11" x2="18" y2="11" stroke="currentColor" stroke-width="1.3"/>
+          <circle cx="8" cy="16" r="1.6" fill="currentColor"/>
+          <line x1="2" y1="16" x2="18" y2="16" stroke="currentColor" stroke-width="1.3"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <div class="layout">
+    <div class="sidebar">
+      <div class="card">
+        <p class="card-title">Top Priorities</p>
+        <div class="priority-rows" id="priorityRows"></div>
+      </div>
+
+      <div class="card">
+        <p class="card-title">To&#8209;Do <span class="count" id="todoCount"></span></p>
+        <div id="todoRows"></div>
+        <div class="add-row bordered">
+          <span class="add-glyph">+</span>
+          <input class="add-input" id="addTodo" placeholder="Add a to-do for the week&hellip;" />
+        </div>
+      </div>
+
+      <div class="card">
+        <p class="card-title">Habit Tracker</p>
+        <div class="habit-head" id="habitHead"></div>
+        <div id="habitRows"></div>
+        <div class="add-row">
+          <span class="add-glyph">+</span>
+          <input class="add-input" id="addHabit" placeholder="Add a habit&hellip;" />
+        </div>
+      </div>
+    </div>
+
+    <div class="week-grid" id="weekGrid"></div>
+  </div>
+
+  <footer class="hint">Each day lists what&rsquo;s blocked (tap + to add, tap an entry to edit or delete) with a short to-do strip below it. Toggling a letter chip on a weekly to-do (M T W T F S S) also drops it into that day&rsquo;s strip. Everything saves locally in this browser &mdash; blocked time is manual for now, ready to sync from Google Calendar once that connector is linked.</footer>
+</div>
+
+<div class="theme-overlay" id="themeOverlay"></div>
+<aside class="theme-panel" id="themePanel" aria-label="Design panel" aria-hidden="true">
+  <div class="theme-panel-head">
+    <p class="theme-panel-title">Design</p>
+    <button class="row-remove theme-panel-close" id="themeClose" aria-label="Close design panel">&times;</button>
+  </div>
+  <p class="theme-hint">Tweak colors, type, and shape &mdash; changes apply instantly and are saved in this browser.</p>
+
+  <div class="theme-section">
+    <p class="theme-section-title">Colors</p>
+    <div class="theme-field">
+      <label for="tBg">Background</label>
+      <input type="color" id="tBg">
+    </div>
+    <div class="theme-field">
+      <label for="tSurface">Surface (cards)</label>
+      <input type="color" id="tSurface">
+    </div>
+    <div class="theme-field">
+      <label for="tInk">Text</label>
+      <input type="color" id="tInk">
+    </div>
+    <div class="theme-field">
+      <label for="tAccent">Accent</label>
+      <input type="color" id="tAccent">
+    </div>
+    <div class="theme-field">
+      <label for="tHighlight">Highlight</label>
+      <input type="color" id="tHighlight">
+    </div>
+  </div>
+
+  <div class="theme-section">
+    <p class="theme-section-title">Type</p>
+    <div class="theme-field">
+      <label for="tFont">Headings</label>
+      <select id="tFont">
+        <option value="serif">Serif</option>
+        <option value="sans">Sans (bold)</option>
+        <option value="mono">Mono</option>
+        <option value="rounded">Rounded</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="theme-section">
+    <p class="theme-section-title">Shape</p>
+    <div class="theme-field">
+      <label for="tRadius">Corner radius</label>
+      <input type="range" id="tRadius" min="0" max="26" step="1">
+    </div>
+    <div class="theme-field">
+      <label for="tShadow">Shadow</label>
+      <select id="tShadow">
+        <option value="none">None</option>
+        <option value="soft">Soft</option>
+        <option value="elevated">Elevated</option>
+      </select>
+    </div>
+  </div>
+
+  <p class="theme-hint">Overrides apply the same in light and dark mode.</p>
+
+  <div class="theme-actions">
+    <button id="themeReset">Reset</button>
+    <button id="themeCopy" class="primary">Copy CSS</button>
+  </div>
+
+  <div class="theme-section">
+    <p class="theme-section-title">Google Calendar</p>
+    <div class="gcal-status">
+      <span class="gcal-dot" id="gcalDot"></span>
+      <span id="gcalStatusText">Not connected</span>
+    </div>
+    <div class="gcal-field" id="gcalClientIdField">
+      <input type="text" id="gcalClientId" placeholder="Google OAuth Client ID">
+    </div>
+    <div class="gcal-actions">
+      <button id="gcalConnect" class="primary">Connect</button>
+      <button id="gcalDisconnect" style="display:none;">Disconnect</button>
+    </div>
+    <p class="theme-hint">Read-only, this browser tab only &mdash; nothing is stored on a server. See README for how to get a Client ID.</p>
+  </div>
+</aside>
+
+<script>
+(function(){
+  var DAY_NAMES = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  var DAY_LETTERS = ['M','T','W','T','F','S','S'];
+  var MONTH_NAMES = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  var STORAGE_KEY = 'weekly-planner-v1';
+  var openEventForm = null; // { day: 0-6, editId: string|null }
+  var googleEventsByWeek = {}; // isoWeekKey -> [{day, start, end, title, htmlLink, source:'google'}]
+  var googleAccessToken = null;
+  var googleTokenClient = null;
+
+  function uid(){ return Math.random().toString(36).slice(2, 10) + Date.now().toString(36); }
+
+  function startOfDay(d){ var c = new Date(d); c.setHours(0,0,0,0); return c; }
+  function getMonday(d){
+    var c = startOfDay(d);
+    var day = c.getDay();
+    var diff = (day === 0) ? -6 : 1 - day;
+    c.setDate(c.getDate() + diff);
+    return c;
+  }
+  function addDays(d, n){ var c = new Date(d); c.setDate(c.getDate() + n); return c; }
+  function sameDay(a, b){ return startOfDay(a).getTime() === startOfDay(b).getTime(); }
+
+  function isoWeekKey(monday){
+    // ISO week number for the given Monday
+    var d = new Date(Date.UTC(monday.getFullYear(), monday.getMonth(), monday.getDate()));
+    var dayNum = d.getUTCDay() || 7;
+    d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+    var yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+    var weekNo = Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+    return d.getUTCFullYear() + '-W' + String(weekNo).padStart(2, '0');
+  }
+
+  function loadAll(){
+    try{
+      var raw = localStorage.getItem(STORAGE_KEY);
+      return raw ? JSON.parse(raw) : { weeks: {} };
+    }catch(e){ return { weeks: {} }; }
+  }
+  function saveAll(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(store)); }
+
+  function blankWeek(){
+    return {
+      priorities: [ {id: uid(), text: ''}, {id: uid(), text: ''}, {id: uid(), text: ''} ],
+      todos: [],
+      habits: [],
+      events: []
+    };
+  }
+
+  var store = loadAll();
+  var currentMonday = getMonday(new Date());
+
+  function currentWeekData(){
+    var key = isoWeekKey(currentMonday);
+    if (!store.weeks[key]) store.weeks[key] = blankWeek();
+    var week = store.weeks[key];
+    if (!week.events) week.events = []; // back-fill weeks saved before the schedule feature existed
+    return week;
+  }
+
+  function timeToMinutes(t){
+    var parts = t.split(':');
+    return (+parts[0]) * 60 + (+parts[1]);
+  }
+  function formatTimeLabel(t){
+    var mins = timeToMinutes(t);
+    var h = Math.floor(mins / 60), m = mins % 60;
+    var period = h < 12 ? 'AM' : 'PM';
+    var hr = h % 12; if (hr === 0) hr = 12;
+    return hr + (m ? ':' + String(m).padStart(2,'0') : '') + period;
+  }
+
+  function fmtHeading(monday){
+    var sunday = addDays(monday, 6);
+    var sameMonth = monday.getMonth() === sunday.getMonth();
+    var left = MONTH_NAMES[monday.getMonth()] + ' ' + monday.getDate();
+    var right = (sameMonth ? MONTH_NAMES[sunday.getMonth()] + ' ' : MONTH_NAMES[sunday.getMonth()] + ' ') + sunday.getDate() + ', ' + sunday.getFullYear();
+    if (!sameMonth) right = MONTH_NAMES[sunday.getMonth()] + ' ' + sunday.getDate() + ', ' + sunday.getFullYear();
+    return left + ' – ' + right;
+  }
+
+  function el(tag, cls, attrs){
+    var e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (attrs) for (var k in attrs) { e.setAttribute(k, attrs[k]); }
+    return e;
+  }
+  function checkSvg(){
+    return '<svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 8.5L6.2 11.5L13 4.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  }
+
+  var todayReal = new Date();
+
+  function render(){
+    document.getElementById('weekHeading').textContent = fmtHeading(currentMonday);
+    var data = currentWeekData();
+
+    renderPriorities(data);
+    renderTodos(data);
+    renderHabits(data);
+    renderWeekGrid(data);
+
+    if (googleAccessToken && !googleEventsByWeek[isoWeekKey(currentMonday)]) fetchGoogleEvents(currentMonday);
+  }
+
+  // ---------- Priorities ----------
+  function renderPriorities(data){
+    var wrap = document.getElementById('priorityRows');
+    wrap.innerHTML = '';
+    data.priorities.forEach(function(p, i){
+      var row = el('div', 'row');
+      var idx = el('span', 'priority-index');
+      idx.textContent = (i + 1);
+      var input = el('input', 'row-text');
+      input.placeholder = 'Priority ' + (i + 1);
+      input.value = p.text;
+      input.addEventListener('input', function(){ p.text = input.value; saveAll(); });
+      var rm = el('button', 'row-remove', {'aria-label': 'Remove priority'});
+      rm.textContent = '×';
+      rm.addEventListener('click', function(){
+        data.priorities = data.priorities.filter(function(x){ return x.id !== p.id; });
+        saveAll(); render();
+      });
+      row.appendChild(idx); row.appendChild(input); row.appendChild(rm);
+      wrap.appendChild(row);
+    });
+    var addRow = el('div', 'add-row');
+    var glyph = el('span', 'add-glyph'); glyph.textContent = '+';
+    var addInput = el('input', 'add-input');
+    addInput.placeholder = 'Add a priority…';
+    addInput.addEventListener('keydown', function(ev){
+      if (ev.key === 'Enter' && addInput.value.trim()){
+        data.priorities.push({ id: uid(), text: addInput.value.trim() });
+        saveAll(); render();
+        var rows = document.querySelectorAll('#priorityRows .add-input');
+      }
+    });
+    addRow.appendChild(glyph); addRow.appendChild(addInput);
+    wrap.appendChild(addRow);
+  }
+
+  // ---------- Weekly To-Do ----------
+  function renderTodos(data){
+    var wrap = document.getElementById('todoRows');
+    var countEl = document.getElementById('todoCount');
+    var openCount = data.todos.filter(function(t){ return !t.done; }).length;
+    countEl.textContent = data.todos.length ? (openCount + '/' + data.todos.length) : '';
+    wrap.innerHTML = '';
+
+    if (!data.todos.length){
+      wrap.appendChild(el('div', 'empty-hint')).textContent = 'Nothing yet — add a task below.';
+    }
+
+    data.todos.forEach(function(t){
+      var row = el('div', 'row');
+
+      var check = el('button', 'check' + (t.done ? ' checked' : ''), {'aria-label':'Toggle done'});
+      check.innerHTML = checkSvg();
+      check.addEventListener('click', function(){ t.done = !t.done; saveAll(); render(); });
+
+      var input = el('input', 'row-text' + (t.done ? ' done' : ''));
+      input.value = t.text;
+      input.addEventListener('input', function(){ t.text = input.value; saveAll(); });
+
+      var chips = el('div', 'daychips');
+      DAY_LETTERS.forEach(function(letter, i){
+        var chip = el('button', 'chip' + (t.days.indexOf(i) > -1 ? ' on' : ''), {'aria-label': DAY_NAMES[i]});
+        if (sameDay(addDays(currentMonday, i), todayReal)) chip.classList.add('today-col');
+        chip.textContent = letter;
+        chip.title = 'Also show on ' + DAY_NAMES[i];
+        chip.addEventListener('click', function(){
+          var pos = t.days.indexOf(i);
+          if (pos > -1) t.days.splice(pos, 1); else t.days.push(i);
+          saveAll(); render();
+        });
+        chips.appendChild(chip);
+      });
+
+      var rm = el('button', 'row-remove', {'aria-label': 'Delete to-do'});
+      rm.textContent = '×';
+      rm.addEventListener('click', function(){
+        data.todos = data.todos.filter(function(x){ return x.id !== t.id; });
+        saveAll(); render();
+      });
+
+      row.appendChild(check); row.appendChild(input); row.appendChild(chips); row.appendChild(rm);
+      wrap.appendChild(row);
+    });
+  }
+
+  function addTodoFromInput(inputEl, presetDays){
+    var text = inputEl.value.trim();
+    if (!text) return;
+    var data = currentWeekData();
+    data.todos.push({ id: uid(), text: text, done: false, days: presetDays ? presetDays.slice() : [] });
+    saveAll();
+    render();
+  }
+
+  // ---------- Habits ----------
+  function renderHabits(data){
+    var head = document.getElementById('habitHead');
+    head.innerHTML = '';
+    head.appendChild(document.createElement('span'));
+    DAY_LETTERS.forEach(function(l, i){
+      var s = document.createElement('span');
+      s.textContent = l;
+      if (sameDay(addDays(currentMonday, i), todayReal)) s.style.color = 'var(--accent)';
+      head.appendChild(s);
+    });
+
+    var wrap = document.getElementById('habitRows');
+    wrap.innerHTML = '';
+    if (!data.habits.length){
+      wrap.appendChild(el('div', 'empty-hint')).textContent = 'No habits yet — add one below.';
+    }
+    data.habits.forEach(function(h){
+      var row = el('div', 'habit-row');
+      var nameWrap = el('div', 'habit-name-wrap');
+      var nameInput = el('input', 'habit-name');
+      nameInput.value = h.name;
+      nameInput.addEventListener('input', function(){ h.name = nameInput.value; saveAll(); });
+      var rm = el('button', 'row-remove', {'aria-label': 'Remove habit'});
+      rm.style.opacity = '1';
+      rm.textContent = '×';
+      rm.addEventListener('click', function(){
+        data.habits = data.habits.filter(function(x){ return x.id !== h.id; });
+        saveAll(); render();
+      });
+      nameWrap.appendChild(nameInput); nameWrap.appendChild(rm);
+      row.appendChild(nameWrap);
+
+      for (var i = 0; i < 7; i++){
+        (function(i){
+          var box = el('button', 'habit-box' + (h.checks[i] ? ' on' : ''), {'aria-label': DAY_NAMES[i]});
+          if (sameDay(addDays(currentMonday, i), todayReal)) box.classList.add('today-col');
+          box.addEventListener('click', function(){ h.checks[i] = !h.checks[i]; saveAll(); render(); });
+          row.appendChild(box);
+        })(i);
+      }
+      wrap.appendChild(row);
+    });
+  }
+
+  // ---------- Week grid ----------
+  function renderWeekGrid(data){
+    var grid = document.getElementById('weekGrid');
+    grid.innerHTML = '';
+
+    for (var i = 0; i < 7; i++){
+      var date = addDays(currentMonday, i);
+      var isToday = sameDay(date, todayReal);
+
+      var card = el('div', 'day-card' + (isToday ? ' is-today' : ''));
+
+      var head = el('div', 'day-head');
+      var name = el('p', 'day-name');
+      name.textContent = DAY_NAMES[i];
+      if (isToday){
+        var pill = el('span', 'today-pill'); pill.textContent = 'TODAY';
+        name.appendChild(pill);
+      }
+      var dateLine = el('p', 'day-date');
+      dateLine.textContent = MONTH_NAMES[date.getMonth()] + ' ' + date.getDate();
+      head.appendChild(name); head.appendChild(dateLine);
+
+      card.appendChild(head);
+      card.appendChild(renderDaySchedule(data, i));
+      card.appendChild(renderDayTodos(data, i));
+
+      grid.appendChild(card);
+    }
+  }
+
+  function renderDayTodos(data, dayIndex){
+    var wrap = el('div', 'day-todo-wrap');
+    wrap.appendChild(el('div', 'day-todo-label')).textContent = 'To-dos';
+
+    var list = el('div', 'day-todo-list');
+    var items = data.todos.filter(function(t){ return t.days.indexOf(dayIndex) > -1; });
+
+    if (!items.length){
+      list.appendChild(el('div', 'empty-hint')).textContent = 'No items.';
+    }
+
+    items.forEach(function(t){
+      var row = el('div', 'day-row');
+      var check = el('button', 'check' + (t.done ? ' checked' : ''), {'aria-label':'Toggle done'});
+      check.innerHTML = checkSvg();
+      check.addEventListener('click', function(){ t.done = !t.done; saveAll(); render(); });
+
+      var input = el('input', 'row-text' + (t.done ? ' done' : ''));
+      input.value = t.text;
+      input.addEventListener('input', function(){ t.text = input.value; saveAll(); });
+
+      var un = el('button', 'day-unassign', {'aria-label':'Remove from this day'});
+      un.textContent = '×';
+      un.title = 'Remove from ' + DAY_NAMES[dayIndex];
+      un.addEventListener('click', function(){
+        var pos = t.days.indexOf(dayIndex);
+        if (pos > -1) t.days.splice(pos, 1);
+        saveAll(); render();
+      });
+
+      row.appendChild(check); row.appendChild(input); row.appendChild(un);
+      list.appendChild(row);
+    });
+    wrap.appendChild(list);
+
+    var addWrap = el('div', 'day-add');
+    var glyph = el('span', 'add-glyph'); glyph.textContent = '+';
+    var addInput = el('input', 'add-input');
+    addInput.placeholder = 'Add…';
+    addInput.addEventListener('keydown', function(ev){
+      if (ev.key === 'Enter'){ addTodoFromInput(addInput, [dayIndex]); }
+    });
+    addWrap.appendChild(glyph); addWrap.appendChild(addInput);
+    wrap.appendChild(addWrap);
+
+    return wrap;
+  }
+
+  // ---------- day schedule (manual, Google-Calendar-ready) ----------
+  function renderDaySchedule(data, dayIndex){
+    var wrap = el('div', 'day-schedule-wrap');
+
+    var head = el('div', 'schedule-head');
+    head.appendChild(el('span', 'schedule-label')).textContent = 'Schedule';
+    var addBtn = el('button', 'schedule-add', {'aria-label': 'Add event'});
+    addBtn.textContent = '+';
+    addBtn.addEventListener('click', function(){
+      openEventForm = { day: dayIndex, editId: null };
+      render();
+    });
+    head.appendChild(addBtn);
+    wrap.appendChild(head);
+
+    var list = el('div', 'event-list');
+    var manualEvents = data.events.filter(function(e){ return e.day === dayIndex; }).map(function(e){ return Object.assign({source:'manual'}, e); });
+    var gEvents = (googleEventsByWeek[isoWeekKey(currentMonday)] || []).filter(function(e){ return e.day === dayIndex; });
+    var dayEvents = manualEvents.concat(gEvents);
+    dayEvents.sort(function(a,b){ return timeToMinutes(a.start) - timeToMinutes(b.start); });
+
+    if (!dayEvents.length){
+      list.appendChild(el('div', 'empty-hint')).textContent = 'Nothing blocked.';
+    }
+
+    dayEvents.forEach(function(ev){
+      var isGoogle = ev.source === 'google';
+      var row = el('div', 'event-row' + (isGoogle ? ' gcal' : ''));
+      row.appendChild(el('span', 'event-row-bar'));
+      var main = el('div', 'event-row-main');
+      main.appendChild(el('span', 'event-row-title')).textContent = ev.title;
+      main.appendChild(el('span', 'event-row-time')).textContent = formatTimeLabel(ev.start) + '–' + formatTimeLabel(ev.end);
+      row.appendChild(main);
+      if (isGoogle){
+        row.title = 'Open in Google Calendar';
+        row.addEventListener('click', function(){ window.open(ev.htmlLink, '_blank', 'noopener'); });
+      } else {
+        row.addEventListener('click', function(){
+          openEventForm = { day: dayIndex, editId: ev.id };
+          render();
+        });
+      }
+      list.appendChild(row);
+    });
+    wrap.appendChild(list);
+
+    if (openEventForm && openEventForm.day === dayIndex){
+      wrap.appendChild(renderEventForm(data, dayIndex, openEventForm.editId));
+    }
+
+    return wrap;
+  }
+
+  function renderEventForm(data, dayIndex, editId){
+    var editing = editId ? data.events.find(function(e){ return e.id === editId; }) : null;
+
+    var form = el('div', 'event-form');
+
+    var row1 = el('div', 'event-form-row');
+    var startInput = el('input', '', {type: 'time'});
+    startInput.value = editing ? editing.start : '09:00';
+    var endInput = el('input', '', {type: 'time'});
+    endInput.value = editing ? editing.end : '10:00';
+    row1.appendChild(startInput); row1.appendChild(endInput);
+
+    var titleInput = el('input', '', {type: 'text', placeholder: 'Event title'});
+    titleInput.value = editing ? editing.title : '';
+
+    function submit(){
+      var title = titleInput.value.trim();
+      if (!title || !startInput.value || !endInput.value) return;
+      if (timeToMinutes(endInput.value) <= timeToMinutes(startInput.value)){
+        endInput.style.borderColor = 'var(--danger)';
+        return;
+      }
+      if (editing){
+        editing.start = startInput.value; editing.end = endInput.value; editing.title = title;
+      } else {
+        data.events.push({ id: uid(), day: dayIndex, start: startInput.value, end: endInput.value, title: title });
+      }
+      saveAll(); openEventForm = null; render();
+    }
+
+    titleInput.addEventListener('keydown', function(ev){ if (ev.key === 'Enter') submit(); });
+
+    var actions = el('div', 'event-form-actions');
+    var secondary = el('div', 'event-form-secondary');
+    var cancel = el('button', 'event-form-cancel');
+    cancel.textContent = 'Cancel';
+    cancel.addEventListener('click', function(){ openEventForm = null; render(); });
+    secondary.appendChild(cancel);
+
+    if (editing){
+      var del = el('button', 'event-form-delete');
+      del.textContent = 'Delete';
+      del.addEventListener('click', function(){
+        data.events = data.events.filter(function(e){ return e.id !== editing.id; });
+        saveAll(); openEventForm = null; render();
+      });
+      secondary.appendChild(del);
+    }
+
+    var save = el('button', 'event-form-save');
+    save.textContent = editing ? 'Save' : 'Add';
+    save.addEventListener('click', submit);
+
+    actions.appendChild(secondary);
+    actions.appendChild(save);
+
+    form.appendChild(row1);
+    form.appendChild(titleInput);
+    form.appendChild(actions);
+
+    setTimeout(function(){ titleInput.focus(); }, 0);
+
+    return form;
+  }
+
+  // ---------- global add handlers ----------
+  document.getElementById('addTodo').addEventListener('keydown', function(ev){
+    if (ev.key === 'Enter'){ addTodoFromInput(ev.target, []); }
+  });
+  document.getElementById('addHabit').addEventListener('keydown', function(ev){
+    if (ev.key === 'Enter' && ev.target.value.trim()){
+      var data = currentWeekData();
+      data.habits.push({ id: uid(), name: ev.target.value.trim(), checks: [false,false,false,false,false,false,false] });
+      saveAll(); render();
+    }
+  });
+
+  document.getElementById('prevWeek').addEventListener('click', function(){
+    currentMonday = addDays(currentMonday, -7); render();
+  });
+  document.getElementById('nextWeek').addEventListener('click', function(){
+    currentMonday = addDays(currentMonday, 7); render();
+  });
+  document.getElementById('gotoToday').addEventListener('click', function(){
+    currentMonday = getMonday(new Date()); render();
+  });
+
+  // ---------- design panel ----------
+  var THEME_KEY = 'weekly-planner-theme-v1';
+  var THEME_DEFAULTS = { bg: '#edeae1', surface: '#fbfaf6', ink: '#2a2924', accent: '#3d5346', highlight: '#c97a3a', font: 'serif', radius: 14, shadow: 'soft' };
+  var FONT_STACKS = {
+    serif: 'Georgia, "Iowan Old Style", "Palatino Linotype", Palatino, serif',
+    sans: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
+    mono: 'ui-monospace, "SF Mono", "Cascadia Mono", Menlo, Consolas, monospace',
+    rounded: 'ui-rounded, "SF Pro Rounded", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
+  };
+  var SHADOW_PRESETS = {
+    none: 'none',
+    soft: '0 1px 2px rgba(20,18,14,0.06), 0 6px 16px -8px rgba(20,18,14,0.16)',
+    elevated: '0 2px 6px rgba(20,18,14,0.12), 0 16px 34px -12px rgba(20,18,14,0.3)'
+  };
+
+  function hexToRgb(hex){
+    hex = hex.replace('#', '');
+    if (hex.length === 3) hex = hex.split('').map(function(c){ return c + c; }).join('');
+    var num = parseInt(hex, 16);
+    return [(num >> 16) & 255, (num >> 8) & 255, num & 255];
+  }
+  function rgbToHex(rgb){
+    return '#' + rgb.map(function(v){
+      return Math.round(Math.max(0, Math.min(255, v))).toString(16).padStart(2, '0');
+    }).join('');
+  }
+  function mixHex(hexA, hexB, t){
+    var a = hexToRgb(hexA), b = hexToRgb(hexB);
+    return rgbToHex([a[0] + (b[0]-a[0])*t, a[1] + (b[1]-a[1])*t, a[2] + (b[2]-a[2])*t]);
+  }
+  function luminance(hex){
+    var rgb = hexToRgb(hex);
+    return 0.299*rgb[0] + 0.587*rgb[1] + 0.114*rgb[2];
+  }
+
+  function deriveTokens(t){
+    var accentInk = luminance(t.accent) > 150 ? mixHex(t.ink, '#000000', 0.15) : '#ffffff';
+    return {
+      '--bg': t.bg,
+      '--surface': t.surface,
+      '--surface-2': mixHex(t.surface, t.ink, 0.055),
+      '--ink': t.ink,
+      '--ink-soft': mixHex(t.ink, t.bg, 0.38),
+      '--ink-faint': mixHex(t.ink, t.bg, 0.6),
+      '--done': mixHex(t.ink, t.bg, 0.6),
+      '--line': mixHex(t.ink, t.bg, 0.82),
+      '--line-soft': mixHex(t.ink, t.bg, 0.9),
+      '--accent': t.accent,
+      '--accent-ink': accentInk,
+      '--accent-soft': mixHex(t.accent, t.surface, 0.82),
+      '--accent-soft-line': mixHex(t.accent, t.surface, 0.5),
+      '--highlight': t.highlight,
+      '--highlight-soft': mixHex(t.highlight, t.surface, 0.82),
+      '--font-display': FONT_STACKS[t.font] || FONT_STACKS.serif,
+      '--radius-l': t.radius + 'px',
+      '--radius-m': Math.round(t.radius * 0.68) + 'px',
+      '--radius-s': Math.round(t.radius * 0.42) + 'px',
+      '--shadow': SHADOW_PRESETS[t.shadow] || SHADOW_PRESETS.soft
+    };
+  }
+
+  function applyTheme(t){
+    var tokens = deriveTokens(t);
+    var root = document.documentElement.style;
+    for (var key in tokens) root.setProperty(key, tokens[key]);
+  }
+
+  function loadTheme(){
+    try{
+      var raw = localStorage.getItem(THEME_KEY);
+      return raw ? Object.assign({}, THEME_DEFAULTS, JSON.parse(raw)) : Object.assign({}, THEME_DEFAULTS);
+    }catch(e){ return Object.assign({}, THEME_DEFAULTS); }
+  }
+  function saveTheme(t){ localStorage.setItem(THEME_KEY, JSON.stringify(t)); }
+
+  var currentTheme = loadTheme();
+  applyTheme(currentTheme);
+
+  var tBg = document.getElementById('tBg'), tSurface = document.getElementById('tSurface'),
+      tInk = document.getElementById('tInk'), tAccent = document.getElementById('tAccent'),
+      tHighlight = document.getElementById('tHighlight'), tFont = document.getElementById('tFont'),
+      tRadius = document.getElementById('tRadius'), tShadow = document.getElementById('tShadow');
+
+  function syncThemeInputs(){
+    tBg.value = currentTheme.bg;
+    tSurface.value = currentTheme.surface;
+    tInk.value = currentTheme.ink;
+    tAccent.value = currentTheme.accent;
+    tHighlight.value = currentTheme.highlight;
+    tFont.value = currentTheme.font;
+    tRadius.value = currentTheme.radius;
+    tShadow.value = currentTheme.shadow;
+  }
+  syncThemeInputs();
+
+  function updateTheme(key, value){
+    currentTheme[key] = value;
+    applyTheme(currentTheme);
+    saveTheme(currentTheme);
+  }
+  tBg.addEventListener('input', function(){ updateTheme('bg', tBg.value); });
+  tSurface.addEventListener('input', function(){ updateTheme('surface', tSurface.value); });
+  tInk.addEventListener('input', function(){ updateTheme('ink', tInk.value); });
+  tAccent.addEventListener('input', function(){ updateTheme('accent', tAccent.value); });
+  tHighlight.addEventListener('input', function(){ updateTheme('highlight', tHighlight.value); });
+  tFont.addEventListener('change', function(){ updateTheme('font', tFont.value); });
+  tRadius.addEventListener('input', function(){ updateTheme('radius', +tRadius.value); });
+  tShadow.addEventListener('change', function(){ updateTheme('shadow', tShadow.value); });
+
+  var themePanel = document.getElementById('themePanel');
+  var themeOverlay = document.getElementById('themeOverlay');
+  function openThemePanel(){
+    themePanel.classList.add('open');
+    themeOverlay.classList.add('open');
+    themePanel.setAttribute('aria-hidden', 'false');
+  }
+  function closeThemePanel(){
+    themePanel.classList.remove('open');
+    themeOverlay.classList.remove('open');
+    themePanel.setAttribute('aria-hidden', 'true');
+  }
+  document.getElementById('themeToggle').addEventListener('click', openThemePanel);
+  document.getElementById('themeClose').addEventListener('click', closeThemePanel);
+  themeOverlay.addEventListener('click', closeThemePanel);
+  document.addEventListener('keydown', function(ev){
+    if (ev.key === 'Escape' && themePanel.classList.contains('open')) closeThemePanel();
+  });
+
+  document.getElementById('themeReset').addEventListener('click', function(){
+    currentTheme = Object.assign({}, THEME_DEFAULTS);
+    applyTheme(currentTheme);
+    saveTheme(currentTheme);
+    syncThemeInputs();
+  });
+
+  document.getElementById('themeCopy').addEventListener('click', function(){
+    var tokens = deriveTokens(currentTheme);
+    var lines = ['  --bg: ' + tokens['--bg'] + ';', '  --surface: ' + tokens['--surface'] + ';', '  --surface-2: ' + tokens['--surface-2'] + ';',
+      '  --ink: ' + tokens['--ink'] + ';', '  --ink-soft: ' + tokens['--ink-soft'] + ';', '  --ink-faint: ' + tokens['--ink-faint'] + ';',
+      '  --line: ' + tokens['--line'] + ';', '  --line-soft: ' + tokens['--line-soft'] + ';',
+      '  --accent: ' + tokens['--accent'] + ';', '  --accent-ink: ' + tokens['--accent-ink'] + ';',
+      '  --accent-soft: ' + tokens['--accent-soft'] + ';', '  --accent-soft-line: ' + tokens['--accent-soft-line'] + ';',
+      '  --highlight: ' + tokens['--highlight'] + ';', '  --highlight-soft: ' + tokens['--highlight-soft'] + ';',
+      '  --done: ' + tokens['--done'] + ';',
+      '  --radius-s: ' + tokens['--radius-s'] + ';', '  --radius-m: ' + tokens['--radius-m'] + ';', '  --radius-l: ' + tokens['--radius-l'] + ';',
+      '  --font-display: ' + tokens['--font-display'] + ';', '  --shadow: ' + tokens['--shadow'] + ';'];
+    var css = ':root{\n' + lines.join('\n') + '\n}';
+    var btn = document.getElementById('themeCopy');
+    var restore = btn.textContent;
+    function done(){ btn.textContent = 'Copied'; setTimeout(function(){ btn.textContent = restore; }, 1400); }
+    if (navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(css).then(done, done);
+    } else {
+      done();
+    }
+  });
+
+  // ---------- Google Calendar ----------
+  var GCAL_CLIENT_ID_KEY = 'weekly-planner-gcal-client-id';
+  var GCAL_SCOPE = 'https://www.googleapis.com/auth/calendar.readonly';
+
+  var gcalClientIdInput = document.getElementById('gcalClientId');
+  var gcalClientIdField = document.getElementById('gcalClientIdField');
+  var gcalConnectBtn = document.getElementById('gcalConnect');
+  var gcalDisconnectBtn = document.getElementById('gcalDisconnect');
+  var gcalDot = document.getElementById('gcalDot');
+  var gcalStatusText = document.getElementById('gcalStatusText');
+
+  var savedClientId = localStorage.getItem(GCAL_CLIENT_ID_KEY);
+  if (savedClientId) gcalClientIdInput.value = savedClientId;
+
+  function setGcalStatus(text, connected){
+    gcalStatusText.textContent = text;
+    gcalDot.classList.toggle('connected', !!connected);
+  }
+
+  function setGcalConnectedUI(connected){
+    gcalClientIdField.style.display = connected ? 'none' : '';
+    gcalConnectBtn.style.display = connected ? 'none' : '';
+    gcalDisconnectBtn.style.display = connected ? '' : 'none';
+  }
+
+  function fetchGoogleEvents(monday){
+    var timeMin = new Date(monday); timeMin.setHours(0,0,0,0);
+    var timeMax = addDays(timeMin, 7);
+    var url = 'https://www.googleapis.com/calendar/v3/calendars/primary/events'
+      + '?timeMin=' + encodeURIComponent(timeMin.toISOString())
+      + '&timeMax=' + encodeURIComponent(timeMax.toISOString())
+      + '&singleEvents=true&orderBy=startTime&maxResults=250';
+
+    setGcalStatus('Syncing…', true);
+
+    fetch(url, { headers: { 'Authorization': 'Bearer ' + googleAccessToken } })
+      .then(function(res){
+        if (!res.ok){
+          if (res.status === 401){
+            googleAccessToken = null;
+            setGcalConnectedUI(false);
+            setGcalStatus('Session expired — reconnect', false);
+            return null;
+          }
+          throw new Error('Calendar API error ' + res.status);
+        }
+        return res.json();
+      })
+      .then(function(json){
+        if (!json) return;
+        var key = isoWeekKey(monday);
+        var list = [];
+        (json.items || []).forEach(function(item){
+          if (!item.start || !item.start.dateTime || !item.end || !item.end.dateTime) return; // skip all-day events
+          var start = new Date(item.start.dateTime);
+          var end = new Date(item.end.dateTime);
+          var dayIndex = Math.round((startOfDay(start) - startOfDay(monday)) / 86400000);
+          if (dayIndex < 0 || dayIndex > 6) return;
+          list.push({
+            day: dayIndex,
+            start: String(start.getHours()).padStart(2,'0') + ':' + String(start.getMinutes()).padStart(2,'0'),
+            end: String(end.getHours()).padStart(2,'0') + ':' + String(end.getMinutes()).padStart(2,'0'),
+            title: item.summary || '(untitled)',
+            htmlLink: item.htmlLink,
+            source: 'google'
+          });
+        });
+        googleEventsByWeek[key] = list;
+        setGcalStatus('Synced ' + list.length + ' event' + (list.length === 1 ? '' : 's'), true);
+        render();
+      })
+      .catch(function(){
+        setGcalStatus('Sync failed — try again', true);
+      });
+  }
+
+  function onGoogleToken(resp){
+    if (resp.error){
+      setGcalStatus('Connection failed: ' + resp.error, false);
+      return;
+    }
+    googleAccessToken = resp.access_token;
+    setGcalConnectedUI(true);
+    setGcalStatus('Connected', true);
+    googleEventsByWeek = {};
+    fetchGoogleEvents(currentMonday);
+  }
+
+  gcalConnectBtn.addEventListener('click', function(){
+    var clientId = gcalClientIdInput.value.trim();
+    if (!clientId){
+      setGcalStatus('Paste a Client ID first', false);
+      gcalClientIdInput.focus();
+      return;
+    }
+    localStorage.setItem(GCAL_CLIENT_ID_KEY, clientId);
+
+    if (typeof google === 'undefined' || !google.accounts || !google.accounts.oauth2){
+      setGcalStatus('Google script still loading — try again', false);
+      return;
+    }
+    if (!googleTokenClient || googleTokenClient.__clientId !== clientId){
+      googleTokenClient = google.accounts.oauth2.initTokenClient({
+        client_id: clientId,
+        scope: GCAL_SCOPE,
+        callback: onGoogleToken
+      });
+      googleTokenClient.__clientId = clientId;
+    }
+    setGcalStatus('Opening Google sign-in…', false);
+    googleTokenClient.requestAccessToken({ prompt: googleAccessToken ? '' : 'consent' });
+  });
+
+  gcalDisconnectBtn.addEventListener('click', function(){
+    if (googleAccessToken && typeof google !== 'undefined' && google.accounts && google.accounts.oauth2){
+      google.accounts.oauth2.revoke(googleAccessToken, function(){});
+    }
+    googleAccessToken = null;
+    googleEventsByWeek = {};
+    setGcalConnectedUI(false);
+    setGcalStatus('Not connected', false);
+    render();
+  });
+
+  render();
+})();
+</script>
+
+</body>
+</html>
