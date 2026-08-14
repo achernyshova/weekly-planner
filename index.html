@@ -949,7 +949,7 @@
     <button id="themeCopy" class="primary">Copy CSS</button>
   </div>
 
-  <div class="theme-section">
+  <div class="theme-section" id="gcalClientIdSection">
     <p class="theme-section-title">Google</p>
     <div class="gcal-field">
       <input type="text" id="gcalClientId" placeholder="Google OAuth Client ID">
@@ -1583,6 +1583,10 @@
   });
 
   // ---------- Google sign-in, Calendar pull, Drive task sync ----------
+  // Paste your OAuth Client ID below (from Google Cloud Console → Credentials) and the
+  // design-panel "Google" field disappears entirely — visitors just see a plain Sign in button.
+  var GOOGLE_CLIENT_ID = ''; // e.g. '123456789-abc...apps.googleusercontent.com'
+
   var GCAL_CLIENT_ID_KEY = 'weekly-planner-gcal-client-id';
   var GCAL_WAS_SIGNED_IN_KEY = 'weekly-planner-gcal-was-signed-in';
   var GOOGLE_SCOPES = [
@@ -1594,11 +1598,16 @@
   var DRIVE_FILE_NAME = 'weekly-planner-data.json';
 
   var gcalClientIdInput = document.getElementById('gcalClientId');
-  var savedClientId = localStorage.getItem(GCAL_CLIENT_ID_KEY);
-  if (savedClientId) gcalClientIdInput.value = savedClientId;
-  gcalClientIdInput.addEventListener('input', function(){
-    localStorage.setItem(GCAL_CLIENT_ID_KEY, gcalClientIdInput.value.trim());
-  });
+  var gcalClientIdSection = document.getElementById('gcalClientIdSection');
+  if (GOOGLE_CLIENT_ID){
+    gcalClientIdSection.style.display = 'none';
+  } else {
+    var savedClientId = localStorage.getItem(GCAL_CLIENT_ID_KEY);
+    if (savedClientId) gcalClientIdInput.value = savedClientId;
+    gcalClientIdInput.addEventListener('input', function(){
+      localStorage.setItem(GCAL_CLIENT_ID_KEY, gcalClientIdInput.value.trim());
+    });
+  }
 
   var signInBtn = document.getElementById('signInBtn');
   var accountBtn = document.getElementById('accountBtn');
@@ -1790,7 +1799,7 @@
   }
 
   function requestGoogleSignIn(interactive){
-    var clientId = gcalClientIdInput.value.trim();
+    var clientId = GOOGLE_CLIENT_ID || gcalClientIdInput.value.trim();
     if (!clientId){
       openThemePanel();
       gcalClientIdInput.focus();
