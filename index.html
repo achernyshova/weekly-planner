@@ -148,6 +148,78 @@
   }
   .today-btn:hover{ filter:brightness(0.97); }
 
+  /* ---------- account menu ---------- */
+  .account-menu{ position:relative; }
+  .signin-btn{
+    height:34px;
+    display:flex;
+    align-items:center;
+    gap:7px;
+    padding:0 13px 0 10px;
+    border-radius:17px;
+    border:1px solid var(--line);
+    background:var(--surface);
+    color:var(--ink);
+    font-size:13px;
+    font-weight:600;
+    cursor:pointer;
+  }
+  .signin-btn:hover{ background:var(--surface-2); border-color:var(--ink-faint); }
+  .account-btn{
+    width:34px; height:34px;
+    border-radius:50%;
+    border:1px solid var(--line);
+    background:var(--surface-2);
+    padding:0;
+    cursor:pointer;
+    overflow:hidden;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .account-avatar{ width:100%; height:100%; object-fit:cover; display:block; }
+  .account-initials{
+    font-family:var(--font-display);
+    font-size:13px;
+    font-weight:700;
+    color:var(--accent);
+  }
+  .account-dropdown{
+    display:none;
+    position:absolute;
+    top:42px; right:0;
+    width:230px;
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:var(--radius-m);
+    box-shadow:var(--shadow);
+    padding:14px;
+    z-index:30;
+  }
+  .account-dropdown.open{ display:block; }
+  .account-dropdown-head{ margin-bottom:8px; }
+  .account-name{ margin:0; font-size:13.5px; font-weight:700; color:var(--ink); }
+  .account-email{ margin:2px 0 0; font-size:11.5px; color:var(--ink-faint); }
+  .account-sync-status{
+    margin:8px 0;
+    padding:8px 0;
+    border-top:1px solid var(--line-soft);
+    border-bottom:1px solid var(--line-soft);
+    font-size:11.5px;
+    color:var(--ink-soft);
+  }
+  .account-dropdown-actions{ display:flex; gap:6px; }
+  .account-dropdown-actions button{
+    flex:1 1 0;
+    font-size:11.5px;
+    padding:7px;
+    border-radius:7px;
+    border:1px solid var(--line);
+    background:var(--surface-2);
+    color:var(--ink);
+    cursor:pointer;
+    font-weight:600;
+  }
+  .account-dropdown-actions button:hover{ filter:brightness(0.97); }
+
   /* ---------- layout ---------- */
   .layout{
     display:grid;
@@ -578,22 +650,7 @@
     margin-top:28px;
   }
 
-  /* ---------- google calendar ---------- */
-  .gcal-status{
-    display:flex;
-    align-items:center;
-    gap:6px;
-    font-size:11.5px;
-    color:var(--ink-soft);
-    margin:4px 0 8px;
-  }
-  .gcal-dot{
-    width:7px; height:7px;
-    border-radius:50%;
-    background:var(--ink-faint);
-    flex:0 0 auto;
-  }
-  .gcal-dot.connected{ background:var(--accent); }
+  /* ---------- google calendar event styling ---------- */
   .gcal-field input[type="text"]{
     width:100%;
     border:1px solid var(--line);
@@ -602,22 +659,7 @@
     font-size:12px;
     background:var(--surface);
     color:var(--ink);
-    margin-bottom:8px;
   }
-  .gcal-actions{ display:flex; gap:6px; }
-  .gcal-actions button{
-    flex:1 1 0;
-    font-size:11.5px;
-    padding:7px;
-    border-radius:7px;
-    border:1px solid var(--line);
-    background:var(--surface-2);
-    color:var(--ink);
-    cursor:pointer;
-    font-weight:600;
-  }
-  .gcal-actions button.primary{ background:var(--accent); color:var(--accent-ink); border-color:var(--accent); }
-  .gcal-actions button:hover{ filter:brightness(0.97); }
   .event-row.gcal{ cursor:pointer; }
   .event-row.gcal .event-row-bar{ background:var(--highlight); }
   .event-row.gcal .event-row-title::after{
@@ -776,6 +818,33 @@
           <line x1="2" y1="16" x2="18" y2="16" stroke="currentColor" stroke-width="1.3"/>
         </svg>
       </button>
+
+      <div class="account-menu">
+        <button class="signin-btn" id="signInBtn">
+          <svg viewBox="0 0 18 18" width="15" height="15" xmlns="http://www.w3.org/2000/svg">
+            <path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84a4.14 4.14 0 0 1-1.8 2.72v2.26h2.92c1.7-1.57 2.68-3.88 2.68-6.62z"/>
+            <path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.92-2.26c-.81.54-1.84.86-3.04.86-2.34 0-4.32-1.58-5.03-3.7H.95v2.33A9 9 0 0 0 9 18z"/>
+            <path fill="#FBBC05" d="M3.97 10.72A5.4 5.4 0 0 1 3.68 9c0-.6.1-1.18.29-1.72V4.95H.95A9 9 0 0 0 0 9c0 1.45.35 2.83.95 4.05l3.02-2.33z"/>
+            <path fill="#EA4335" d="M9 3.58c1.32 0 2.51.46 3.44 1.35l2.59-2.59A8.97 8.97 0 0 0 9 0 9 9 0 0 0 .95 4.95l3.02 2.33C4.68 5.16 6.66 3.58 9 3.58z"/>
+          </svg>
+          <span>Sign in</span>
+        </button>
+        <button class="account-btn" id="accountBtn" style="display:none;">
+          <img class="account-avatar" id="accountAvatar" alt="">
+          <span class="account-initials" id="accountInitials" style="display:none;"></span>
+        </button>
+        <div class="account-dropdown" id="accountDropdown">
+          <div class="account-dropdown-head">
+            <p class="account-name" id="accountName"></p>
+            <p class="account-email" id="accountEmail"></p>
+          </div>
+          <p class="account-sync-status" id="accountSyncStatus">&mdash;</p>
+          <div class="account-dropdown-actions">
+            <button id="accountSyncNow">Sync now</button>
+            <button id="accountSignOut">Sign out</button>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -809,7 +878,7 @@
     <div class="week-grid" id="weekGrid"></div>
   </div>
 
-  <footer class="hint">Each day lists what&rsquo;s blocked (tap + to add, tap an entry to edit or delete) with a short to-do strip below it. Toggling a letter chip on a weekly to-do (M T W T F S S) also drops it into that day&rsquo;s strip. Everything saves locally in this browser &mdash; blocked time is manual for now, ready to sync from Google Calendar once that connector is linked.</footer>
+  <footer class="hint">Each day lists what&rsquo;s blocked (tap + to add, tap an entry to edit or delete) with a short to-do strip below it. Toggling a letter chip on a weekly to-do (M T W T F S S) also drops it into that day&rsquo;s strip. Everything saves locally in this browser &mdash; sign in with Google (top right) to also pull your Calendar and sync your tasks via your own Google Drive.</footer>
 </div>
 
 <div class="theme-overlay" id="themeOverlay"></div>
@@ -881,19 +950,11 @@
   </div>
 
   <div class="theme-section">
-    <p class="theme-section-title">Google Calendar</p>
-    <div class="gcal-status">
-      <span class="gcal-dot" id="gcalDot"></span>
-      <span id="gcalStatusText">Not connected</span>
-    </div>
-    <div class="gcal-field" id="gcalClientIdField">
+    <p class="theme-section-title">Google</p>
+    <div class="gcal-field">
       <input type="text" id="gcalClientId" placeholder="Google OAuth Client ID">
     </div>
-    <div class="gcal-actions">
-      <button id="gcalConnect" class="primary">Connect</button>
-      <button id="gcalDisconnect" style="display:none;">Disconnect</button>
-    </div>
-    <p class="theme-hint">Read-only, this browser tab only &mdash; nothing is stored on a server. See README for how to get a Client ID.</p>
+    <p class="theme-hint">One-time setup value from Google Cloud Console (see README). Once set, use the account menu in the top-right corner to sign in &mdash; that pulls your Calendar and syncs your tasks via your Google Drive.</p>
   </div>
 </aside>
 
@@ -937,7 +998,10 @@
       return raw ? JSON.parse(raw) : { weeks: {} };
     }catch(e){ return { weeks: {} }; }
   }
-  function saveAll(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(store)); }
+  function saveAll(){
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(store));
+    if (typeof scheduleDriveSync === 'function') scheduleDriveSync();
+  }
 
   function blankWeek(){
     return {
@@ -1518,30 +1582,153 @@
     }
   });
 
-  // ---------- Google Calendar ----------
+  // ---------- Google sign-in, Calendar pull, Drive task sync ----------
   var GCAL_CLIENT_ID_KEY = 'weekly-planner-gcal-client-id';
-  var GCAL_SCOPE = 'https://www.googleapis.com/auth/calendar.readonly';
+  var GCAL_WAS_SIGNED_IN_KEY = 'weekly-planner-gcal-was-signed-in';
+  var GOOGLE_SCOPES = [
+    'https://www.googleapis.com/auth/calendar.readonly',
+    'https://www.googleapis.com/auth/drive.appdata',
+    'https://www.googleapis.com/auth/userinfo.email',
+    'https://www.googleapis.com/auth/userinfo.profile'
+  ].join(' ');
+  var DRIVE_FILE_NAME = 'weekly-planner-data.json';
 
   var gcalClientIdInput = document.getElementById('gcalClientId');
-  var gcalClientIdField = document.getElementById('gcalClientIdField');
-  var gcalConnectBtn = document.getElementById('gcalConnect');
-  var gcalDisconnectBtn = document.getElementById('gcalDisconnect');
-  var gcalDot = document.getElementById('gcalDot');
-  var gcalStatusText = document.getElementById('gcalStatusText');
-
   var savedClientId = localStorage.getItem(GCAL_CLIENT_ID_KEY);
   if (savedClientId) gcalClientIdInput.value = savedClientId;
+  gcalClientIdInput.addEventListener('input', function(){
+    localStorage.setItem(GCAL_CLIENT_ID_KEY, gcalClientIdInput.value.trim());
+  });
 
-  function setGcalStatus(text, connected){
-    gcalStatusText.textContent = text;
-    gcalDot.classList.toggle('connected', !!connected);
+  var signInBtn = document.getElementById('signInBtn');
+  var accountBtn = document.getElementById('accountBtn');
+  var accountAvatar = document.getElementById('accountAvatar');
+  var accountInitials = document.getElementById('accountInitials');
+  var accountDropdown = document.getElementById('accountDropdown');
+  var accountName = document.getElementById('accountName');
+  var accountEmail = document.getElementById('accountEmail');
+  var accountSyncStatus = document.getElementById('accountSyncStatus');
+  var accountSyncNowBtn = document.getElementById('accountSyncNow');
+  var accountSignOutBtn = document.getElementById('accountSignOut');
+
+  var driveFileId = null;
+  var driveSyncTimer = null;
+
+  function setSyncStatus(text){ accountSyncStatus.textContent = text; }
+
+  function setSignedInUI(profile){
+    signInBtn.style.display = 'none';
+    accountBtn.style.display = 'flex';
+    accountName.textContent = profile.name || profile.email || 'Signed in';
+    accountEmail.textContent = profile.email || '';
+    if (profile.picture){
+      accountAvatar.src = profile.picture;
+      accountAvatar.style.display = 'block';
+      accountInitials.style.display = 'none';
+      accountAvatar.onerror = function(){
+        accountAvatar.style.display = 'none';
+        accountInitials.style.display = 'block';
+      };
+    } else {
+      accountAvatar.style.display = 'none';
+      accountInitials.style.display = 'block';
+      var initials = (profile.name || profile.email || '?').trim().split(/\s+/).map(function(w){ return w[0]; }).slice(0,2).join('').toUpperCase();
+      accountInitials.textContent = initials;
+    }
   }
 
-  function setGcalConnectedUI(connected){
-    gcalClientIdField.style.display = connected ? 'none' : '';
-    gcalConnectBtn.style.display = connected ? 'none' : '';
-    gcalDisconnectBtn.style.display = connected ? '' : 'none';
+  function setSignedOutUI(){
+    signInBtn.style.display = 'flex';
+    accountBtn.style.display = 'none';
+    accountDropdown.classList.remove('open');
   }
+
+  accountBtn.addEventListener('click', function(ev){
+    ev.stopPropagation();
+    accountDropdown.classList.toggle('open');
+  });
+  document.addEventListener('click', function(ev){
+    if (!accountDropdown.contains(ev.target) && ev.target !== accountBtn) accountDropdown.classList.remove('open');
+  });
+
+  function googleAuthHeaders(extra){
+    var h = { 'Authorization': 'Bearer ' + googleAccessToken };
+    if (extra) for (var k in extra) h[k] = extra[k];
+    return h;
+  }
+
+  function findDriveFile(){
+    return fetch('https://www.googleapis.com/drive/v3/files?spaces=appDataFolder&fields=files(id,modifiedTime)&q=' + encodeURIComponent("name='" + DRIVE_FILE_NAME + "'"), { headers: googleAuthHeaders() })
+      .then(function(res){ return res.json(); })
+      .then(function(json){ return (json.files && json.files[0]) || null; });
+  }
+
+  function readDriveFile(fileId){
+    return fetch('https://www.googleapis.com/drive/v3/files/' + fileId + '?alt=media', { headers: googleAuthHeaders() })
+      .then(function(res){ return res.ok ? res.text() : null; });
+  }
+
+  function createDriveFile(){
+    return fetch('https://www.googleapis.com/drive/v3/files', {
+      method: 'POST',
+      headers: googleAuthHeaders({ 'Content-Type': 'application/json' }),
+      body: JSON.stringify({ name: DRIVE_FILE_NAME, parents: ['appDataFolder'] })
+    }).then(function(res){ return res.json(); }).then(function(json){ return json.id; });
+  }
+
+  function writeDriveFile(fileId, content){
+    return fetch('https://www.googleapis.com/upload/drive/v3/files/' + fileId + '?uploadType=media', {
+      method: 'PATCH',
+      headers: googleAuthHeaders({ 'Content-Type': 'application/json' }),
+      body: content
+    });
+  }
+
+  function pushStoreToDrive(){
+    if (!googleAccessToken) return;
+    var content = JSON.stringify(store);
+    var go = driveFileId ? Promise.resolve(driveFileId) : createDriveFile().then(function(id){ driveFileId = id; return id; });
+    go.then(function(id){ return writeDriveFile(id, content); })
+      .then(function(res){
+        setSyncStatus(res && res.ok ? 'Synced just now' : 'Sync failed — will retry on next change');
+      })
+      .catch(function(){ setSyncStatus('Sync failed — will retry on next change'); });
+  }
+
+  function scheduleDriveSync(){
+    if (!googleAccessToken) return;
+    setSyncStatus('Syncing…');
+    clearTimeout(driveSyncTimer);
+    driveSyncTimer = setTimeout(pushStoreToDrive, 1800);
+  }
+
+  function pullStoreFromDrive(){
+    setSyncStatus('Syncing…');
+    return findDriveFile().then(function(file){
+      if (file){
+        driveFileId = file.id;
+        return readDriveFile(file.id).then(function(text){
+          var remote = null;
+          try{ remote = text ? JSON.parse(text) : null; }catch(e){ remote = null; }
+          if (remote && remote.weeks && Object.keys(remote.weeks).length){
+            store = remote;
+            saveAllLocalOnly();
+            render();
+            setSyncStatus('Synced just now');
+          } else {
+            pushStoreToDrive();
+          }
+        });
+      } else {
+        return createDriveFile().then(function(id){
+          driveFileId = id;
+          return writeDriveFile(id, JSON.stringify(store));
+        }).then(function(){ setSyncStatus('Synced just now'); });
+      }
+    }).catch(function(){ setSyncStatus('Could not reach Google Drive'); });
+  }
+
+  function saveAllLocalOnly(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(store)); }
 
   function fetchGoogleEvents(monday){
     var timeMin = new Date(monday); timeMin.setHours(0,0,0,0);
@@ -1551,18 +1738,11 @@
       + '&timeMax=' + encodeURIComponent(timeMax.toISOString())
       + '&singleEvents=true&orderBy=startTime&maxResults=250';
 
-    setGcalStatus('Syncing…', true);
-
-    fetch(url, { headers: { 'Authorization': 'Bearer ' + googleAccessToken } })
+    fetch(url, { headers: googleAuthHeaders() })
       .then(function(res){
         if (!res.ok){
-          if (res.status === 401){
-            googleAccessToken = null;
-            setGcalConnectedUI(false);
-            setGcalStatus('Session expired — reconnect', false);
-            return null;
-          }
-          throw new Error('Calendar API error ' + res.status);
+          if (res.status === 401) handleTokenExpired();
+          return null;
         }
         return res.json();
       })
@@ -1586,61 +1766,76 @@
           });
         });
         googleEventsByWeek[key] = list;
-        setGcalStatus('Synced ' + list.length + ' event' + (list.length === 1 ? '' : 's'), true);
         render();
       })
-      .catch(function(){
-        setGcalStatus('Sync failed — try again', true);
-      });
+      .catch(function(){});
   }
 
-  function onGoogleToken(resp){
-    if (resp.error){
-      setGcalStatus('Connection failed: ' + resp.error, false);
-      return;
-    }
-    googleAccessToken = resp.access_token;
-    setGcalConnectedUI(true);
-    setGcalStatus('Connected', true);
+  function handleTokenExpired(){
+    googleAccessToken = null;
+    setSignedOutUI();
+    setSyncStatus('Session expired');
+  }
+
+  function afterSignedIn(){
+    localStorage.setItem(GCAL_WAS_SIGNED_IN_KEY, '1');
     googleEventsByWeek = {};
     fetchGoogleEvents(currentMonday);
+    pullStoreFromDrive();
+
+    fetch('https://www.googleapis.com/oauth2/v3/userinfo', { headers: googleAuthHeaders() })
+      .then(function(res){ return res.ok ? res.json() : null; })
+      .then(function(profile){ if (profile) setSignedInUI(profile); })
+      .catch(function(){});
   }
 
-  gcalConnectBtn.addEventListener('click', function(){
+  function requestGoogleSignIn(interactive){
     var clientId = gcalClientIdInput.value.trim();
     if (!clientId){
-      setGcalStatus('Paste a Client ID first', false);
+      openThemePanel();
       gcalClientIdInput.focus();
       return;
     }
-    localStorage.setItem(GCAL_CLIENT_ID_KEY, clientId);
-
     if (typeof google === 'undefined' || !google.accounts || !google.accounts.oauth2){
-      setGcalStatus('Google script still loading — try again', false);
+      setTimeout(function(){ requestGoogleSignIn(interactive); }, 300);
       return;
     }
     if (!googleTokenClient || googleTokenClient.__clientId !== clientId){
       googleTokenClient = google.accounts.oauth2.initTokenClient({
         client_id: clientId,
-        scope: GCAL_SCOPE,
-        callback: onGoogleToken
+        scope: GOOGLE_SCOPES,
+        callback: function(resp){
+          if (resp.error){
+            if (interactive) setSignedOutUI();
+            return;
+          }
+          googleAccessToken = resp.access_token;
+          afterSignedIn();
+        }
       });
       googleTokenClient.__clientId = clientId;
     }
-    setGcalStatus('Opening Google sign-in…', false);
-    googleTokenClient.requestAccessToken({ prompt: googleAccessToken ? '' : 'consent' });
-  });
+    googleTokenClient.requestAccessToken({ prompt: interactive ? 'consent' : '' });
+  }
 
-  gcalDisconnectBtn.addEventListener('click', function(){
+  signInBtn.addEventListener('click', function(){ requestGoogleSignIn(true); });
+  accountSyncNowBtn.addEventListener('click', function(){ if (googleAccessToken) pullStoreFromDrive(); });
+  accountSignOutBtn.addEventListener('click', function(){
     if (googleAccessToken && typeof google !== 'undefined' && google.accounts && google.accounts.oauth2){
       google.accounts.oauth2.revoke(googleAccessToken, function(){});
     }
     googleAccessToken = null;
+    driveFileId = null;
     googleEventsByWeek = {};
-    setGcalConnectedUI(false);
-    setGcalStatus('Not connected', false);
+    localStorage.removeItem(GCAL_WAS_SIGNED_IN_KEY);
+    setSignedOutUI();
     render();
   });
+
+  // Attempt a silent, non-interactive sign-in on load if we were signed in before
+  if (localStorage.getItem(GCAL_WAS_SIGNED_IN_KEY) === '1' && localStorage.getItem(GCAL_CLIENT_ID_KEY)){
+    requestGoogleSignIn(false);
+  }
 
   render();
 })();
