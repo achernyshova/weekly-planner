@@ -16,16 +16,18 @@ then visit http://localhost:8000
 
 Click the sliders icon next to "Today" to open the design panel — background/surface/text/accent/highlight colors, heading font, corner radius, and shadow style. Changes apply instantly and are saved in your browser. Use "Copy CSS" to grab the resulting token block.
 
-## Sign in with Google (optional)
+## Google sign-in
 
-Click **Sign in** in the top-right corner. This does two things, both running entirely client-side — no backend, nothing sent to any server but Google:
+Click **Sign in with Google** in the top-right corner. Google opens its own account-chooser and consent popup — you never enter a Client ID anywhere in the app itself; that's a one-time setup value the site owner configures in a separate file (see below). Signing in does two things, both running entirely client-side — no backend, nothing sent to any server but Google:
 
 - **Calendar (read-only)**: your events show up alongside your manual "blocked" time, tagged with a small **G** badge (click one to open it in Google Calendar).
 - **Task sync**: your to-dos, priorities, habits, and blocked time are also saved as a private file in your own Google Drive's hidden "app data" folder (invisible in your normal Drive, not shared with anyone, not readable by any other app). Sign in from another device/browser with the same Google account and your tasks are pulled down automatically. Every change syncs back up a couple seconds after you stop typing.
 
-If you never sign in, everything still works exactly as before, saved only to this browser's `localStorage`.
+If you never sign in, everything still works exactly as before, saved only to this browser's `localStorage`. If the app isn't configured yet, or the popup is blocked or cancelled, a small message under the Sign in button explains what happened.
 
-One-time setup (~10 minutes), in [Google Cloud Console](https://console.cloud.google.com):
+### One-time owner setup (~10 minutes)
+
+The token popup still requires an OAuth **Web application Client ID** registered in [Google Cloud Console](https://console.cloud.google.com) — that's a Google platform requirement for any app reading a user's Calendar or Drive data, not something this app can skip. It's a public identifier (safe to commit), not a secret. You only do this once, in [`google-config.js`](google-config.js) — regular visitors never see it or paste it anywhere.
 
 1. Create a new project (or pick an existing one).
 2. **APIs & Services → Library** → search "Google Calendar API" → **Enable**. Also search "Google Drive API" → **Enable**.
@@ -36,9 +38,17 @@ One-time setup (~10 minutes), in [Google Cloud Console](https://console.cloud.go
    - `http://localhost:8000` (for local use)
    - `https://achernyshova.github.io` (for the hosted version — see below)
 6. Copy the **Client ID** it gives you (looks like `123...apps.googleusercontent.com`).
-7. In the app, open the design panel (sliders icon), paste the Client ID under "Google", then click **Sign in** in the top-right corner and approve access in the popup.
+7. Open [`google-config.js`](google-config.js) and paste it in:
 
-The Client ID is not a secret (it's safe to be public) — it's saved to this browser's localStorage so you only have to paste it once per browser. Your access token itself is never stored on disk; it lives in memory for the tab and is silently refreshed on future visits if you stay signed in to Google.
+   ```js
+   window.WEEKLY_PLANNER_CONFIG = {
+     googleClientId: 'YOUR_CLIENT_ID.apps.googleusercontent.com'
+   };
+   ```
+
+8. Commit and push. Do **not** put a client *secret*, API key, or any other credential in this file or repo — only the Client ID, which is meant to be public.
+
+Your access token itself is never stored on disk; it lives in memory for the tab and is silently refreshed on future visits if you stay signed in to Google.
 
 ## Deploy for free (GitHub Pages)
 

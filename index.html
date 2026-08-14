@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Weekly Planner</title>
+<!-- The public OAuth client ID is configured by the site owner in google-config.js. -->
+<script src="google-config.js"></script>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <style>
   :root{
@@ -195,6 +197,23 @@
     z-index:30;
   }
   .account-dropdown.open{ display:block; }
+  .account-message{
+    display:none;
+    position:absolute;
+    top:42px; right:0;
+    width:270px;
+    margin:0;
+    padding:10px 12px;
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:var(--radius-m);
+    box-shadow:var(--shadow);
+    color:var(--ink-soft);
+    font-size:12px;
+    line-height:1.4;
+    z-index:31;
+  }
+  .account-message.show{ display:block; }
   .account-dropdown-head{ margin-bottom:8px; }
   .account-name{ margin:0; font-size:13.5px; font-weight:700; color:var(--ink); }
   .account-email{ margin:2px 0 0; font-size:11.5px; color:var(--ink-faint); }
@@ -651,15 +670,6 @@
   }
 
   /* ---------- google calendar event styling ---------- */
-  .gcal-field input[type="text"]{
-    width:100%;
-    border:1px solid var(--line);
-    border-radius:6px;
-    padding:6px 8px;
-    font-size:12px;
-    background:var(--surface);
-    color:var(--ink);
-  }
   .event-row.gcal{ cursor:pointer; }
   .event-row.gcal .event-row-bar{ background:var(--highlight); }
   .event-row.gcal .event-row-title::after{
@@ -820,16 +830,17 @@
       </button>
 
       <div class="account-menu">
-        <button class="signin-btn" id="signInBtn">
-          <svg viewBox="0 0 18 18" width="15" height="15" xmlns="http://www.w3.org/2000/svg">
+        <button class="signin-btn" id="signInBtn" type="button" aria-describedby="accountMessage">
+          <svg viewBox="0 0 18 18" width="15" height="15" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
             <path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84a4.14 4.14 0 0 1-1.8 2.72v2.26h2.92c1.7-1.57 2.68-3.88 2.68-6.62z"/>
             <path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.92-2.26c-.81.54-1.84.86-3.04.86-2.34 0-4.32-1.58-5.03-3.7H.95v2.33A9 9 0 0 0 9 18z"/>
             <path fill="#FBBC05" d="M3.97 10.72A5.4 5.4 0 0 1 3.68 9c0-.6.1-1.18.29-1.72V4.95H.95A9 9 0 0 0 0 9c0 1.45.35 2.83.95 4.05l3.02-2.33z"/>
             <path fill="#EA4335" d="M9 3.58c1.32 0 2.51.46 3.44 1.35l2.59-2.59A8.97 8.97 0 0 0 9 0 9 9 0 0 0 .95 4.95l3.02 2.33C4.68 5.16 6.66 3.58 9 3.58z"/>
           </svg>
-          <span>Sign in</span>
+          <span>Sign in with Google</span>
         </button>
-        <button class="account-btn" id="accountBtn" style="display:none;">
+        <p class="account-message" id="accountMessage" role="status" aria-live="polite"></p>
+        <button class="account-btn" id="accountBtn" type="button" aria-label="Open Google account menu" style="display:none;">
           <img class="account-avatar" id="accountAvatar" alt="">
           <span class="account-initials" id="accountInitials" style="display:none;"></span>
         </button>
@@ -840,8 +851,8 @@
           </div>
           <p class="account-sync-status" id="accountSyncStatus">&mdash;</p>
           <div class="account-dropdown-actions">
-            <button id="accountSyncNow">Sync now</button>
-            <button id="accountSignOut">Sign out</button>
+            <button id="accountSyncNow" type="button">Sync now</button>
+            <button id="accountSignOut" type="button">Sign out</button>
           </div>
         </div>
       </div>
@@ -947,14 +958,6 @@
   <div class="theme-actions">
     <button id="themeReset">Reset</button>
     <button id="themeCopy" class="primary">Copy CSS</button>
-  </div>
-
-  <div class="theme-section" id="gcalClientIdSection">
-    <p class="theme-section-title">Google</p>
-    <div class="gcal-field">
-      <input type="text" id="gcalClientId" placeholder="Google OAuth Client ID">
-    </div>
-    <p class="theme-hint">One-time setup value from Google Cloud Console (see README). Once set, use the account menu in the top-right corner to sign in &mdash; that pulls your Calendar and syncs your tasks via your Google Drive.</p>
   </div>
 </aside>
 
@@ -1583,11 +1586,10 @@
   });
 
   // ---------- Google sign-in, Calendar pull, Drive task sync ----------
-  // Paste your OAuth Client ID below (from Google Cloud Console → Credentials) and the
-  // design-panel "Google" field disappears entirely — visitors just see a plain Sign in button.
-  var GOOGLE_CLIENT_ID = ''; // e.g. '123456789-abc...apps.googleusercontent.com'
-
-  var GCAL_CLIENT_ID_KEY = 'weekly-planner-gcal-client-id';
+  // `google-config.js` is owned by the site developer. Its client ID is a public
+  // identifier, not a secret; never add an OAuth client secret to this static app.
+  var googleConfig = window.WEEKLY_PLANNER_CONFIG || {};
+  var GOOGLE_CLIENT_ID = typeof googleConfig.googleClientId === 'string' ? googleConfig.googleClientId.trim() : '';
   var GCAL_WAS_SIGNED_IN_KEY = 'weekly-planner-gcal-was-signed-in';
   var GOOGLE_SCOPES = [
     'https://www.googleapis.com/auth/calendar.readonly',
@@ -1597,20 +1599,9 @@
   ].join(' ');
   var DRIVE_FILE_NAME = 'weekly-planner-data.json';
 
-  var gcalClientIdInput = document.getElementById('gcalClientId');
-  var gcalClientIdSection = document.getElementById('gcalClientIdSection');
-  if (GOOGLE_CLIENT_ID){
-    gcalClientIdSection.style.display = 'none';
-  } else {
-    var savedClientId = localStorage.getItem(GCAL_CLIENT_ID_KEY);
-    if (savedClientId) gcalClientIdInput.value = savedClientId;
-    gcalClientIdInput.addEventListener('input', function(){
-      localStorage.setItem(GCAL_CLIENT_ID_KEY, gcalClientIdInput.value.trim());
-    });
-  }
-
   var signInBtn = document.getElementById('signInBtn');
   var accountBtn = document.getElementById('accountBtn');
+  var accountMessage = document.getElementById('accountMessage');
   var accountAvatar = document.getElementById('accountAvatar');
   var accountInitials = document.getElementById('accountInitials');
   var accountDropdown = document.getElementById('accountDropdown');
@@ -1625,7 +1616,13 @@
 
   function setSyncStatus(text){ accountSyncStatus.textContent = text; }
 
+  function setAccountMessage(text){
+    accountMessage.textContent = text || '';
+    accountMessage.classList.toggle('show', !!text);
+  }
+
   function setSignedInUI(profile){
+    setAccountMessage('');
     signInBtn.style.display = 'none';
     accountBtn.style.display = 'flex';
     accountName.textContent = profile.name || profile.email || 'Signed in';
@@ -1799,32 +1796,40 @@
   }
 
   function requestGoogleSignIn(interactive){
-    var clientId = GOOGLE_CLIENT_ID || gcalClientIdInput.value.trim();
-    if (!clientId){
-      openThemePanel();
-      gcalClientIdInput.focus();
+    if (!GOOGLE_CLIENT_ID){
+      setAccountMessage('Google sign-in is not configured yet. The site owner must add the app’s public OAuth client ID to google-config.js.');
       return;
     }
     if (typeof google === 'undefined' || !google.accounts || !google.accounts.oauth2){
-      setTimeout(function(){ requestGoogleSignIn(interactive); }, 300);
+      setAccountMessage('Google sign-in is loading. Please try again in a moment.');
       return;
     }
-    if (!googleTokenClient || googleTokenClient.__clientId !== clientId){
+    if (!googleTokenClient || googleTokenClient.__clientId !== GOOGLE_CLIENT_ID){
       googleTokenClient = google.accounts.oauth2.initTokenClient({
-        client_id: clientId,
+        client_id: GOOGLE_CLIENT_ID,
         scope: GOOGLE_SCOPES,
         callback: function(resp){
-          if (resp.error){
-            if (interactive) setSignedOutUI();
+          if (resp.error || !resp.access_token){
+            setSignedOutUI();
+            setAccountMessage('Google sign-in was not completed. Please try again.');
             return;
           }
           googleAccessToken = resp.access_token;
           afterSignedIn();
+        },
+        error_callback: function(error){
+          setSignedOutUI();
+          if (error && error.type === 'popup_closed'){
+            setAccountMessage('Google sign-in was cancelled.');
+          } else {
+            setAccountMessage('Google sign-in could not open. Please allow pop-ups for this site and try again.');
+          }
         }
       });
-      googleTokenClient.__clientId = clientId;
+      googleTokenClient.__clientId = GOOGLE_CLIENT_ID;
     }
-    googleTokenClient.requestAccessToken({ prompt: interactive ? 'consent' : '' });
+    setAccountMessage('');
+    googleTokenClient.requestAccessToken({ prompt: interactive ? 'select_account' : '' });
   }
 
   signInBtn.addEventListener('click', function(){ requestGoogleSignIn(true); });
@@ -1841,9 +1846,9 @@
     render();
   });
 
-  // Attempt a silent, non-interactive sign-in on load if we were signed in before
-  if (localStorage.getItem(GCAL_WAS_SIGNED_IN_KEY) === '1' && localStorage.getItem(GCAL_CLIENT_ID_KEY)){
-    requestGoogleSignIn(false);
+  // Attempt a non-interactive token refresh only for a returning signed-in user.
+  if (localStorage.getItem(GCAL_WAS_SIGNED_IN_KEY) === '1' && GOOGLE_CLIENT_ID){
+    window.addEventListener('load', function(){ requestGoogleSignIn(false); });
   }
 
   render();
