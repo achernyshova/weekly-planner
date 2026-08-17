@@ -998,6 +998,255 @@
     background:var(--accent);
     box-shadow:0 0 0 3px var(--accent-soft);
   }
+  [hidden]{ display:none !important; }
+  .view-tabs{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:16px;
+    margin:0 2px 14px;
+  }
+  .view-tab-list{
+    display:inline-flex;
+    gap:4px;
+    padding:4px;
+    border:1px solid var(--line);
+    border-radius:11px;
+    background:var(--surface-2);
+  }
+  .view-tab{
+    min-height:34px;
+    display:flex;
+    align-items:center;
+    gap:7px;
+    padding:0 13px;
+    border:0;
+    border-radius:8px;
+    background:transparent;
+    color:var(--ink-soft);
+    font-size:12px;
+    font-weight:700;
+    cursor:pointer;
+  }
+  .view-tab:hover{ color:var(--ink); }
+  .view-tab.active{
+    background:var(--surface);
+    color:var(--ink);
+    box-shadow:0 1px 3px rgba(20,18,14,.09);
+  }
+  .tab-count{
+    min-width:18px;
+    height:18px;
+    display:grid;
+    place-items:center;
+    padding:0 5px;
+    border-radius:999px;
+    background:var(--accent-soft);
+    color:var(--accent);
+    font-family:var(--font-mono);
+    font-size:9px;
+  }
+  .tasks-connection{
+    display:flex;
+    align-items:center;
+    gap:7px;
+    color:var(--ink-faint);
+    font-size:10.5px;
+  }
+  .tasks-connection-dot{
+    width:7px;
+    height:7px;
+    border-radius:50%;
+    background:var(--ink-faint);
+  }
+  .tasks-connection.loading .tasks-connection-dot{ background:var(--highlight); }
+  .tasks-connection.ready{ color:var(--accent); }
+  .tasks-connection.ready .tasks-connection-dot{ background:var(--accent); }
+  .tasks-connection.error{ color:var(--danger); }
+  .tasks-connection.error .tasks-connection-dot{ background:var(--danger); }
+
+  .inbox-view{
+    max-width:920px;
+    margin:0 auto;
+  }
+  .inbox-panel{
+    overflow:hidden;
+    border:1px solid var(--line);
+    border-radius:calc(var(--radius-l) + 3px);
+    background:var(--surface);
+    box-shadow:var(--shadow);
+  }
+  .inbox-head{
+    display:flex;
+    align-items:flex-end;
+    justify-content:space-between;
+    gap:20px;
+    padding:24px 26px 20px;
+    border-bottom:1px solid var(--line);
+  }
+  .inbox-title{
+    margin:2px 0 5px;
+    font-family:var(--font-display);
+    font-size:27px;
+    line-height:1.1;
+  }
+  .inbox-description{
+    margin:0;
+    color:var(--ink-soft);
+    font-size:12px;
+    line-height:1.5;
+  }
+  .inbox-refresh{
+    height:34px;
+    padding:0 12px;
+    border:1px solid var(--line);
+    border-radius:9px;
+    background:var(--surface-2);
+    color:var(--ink-soft);
+    font-size:11px;
+    font-weight:700;
+    cursor:pointer;
+  }
+  .inbox-refresh:hover{ color:var(--ink); border-color:var(--ink-faint); }
+  .inbox-compose{
+    display:grid;
+    grid-template-columns:minmax(0,1fr) minmax(140px,190px) auto;
+    gap:8px;
+    padding:16px 26px;
+    border-bottom:1px solid var(--line-soft);
+    background:var(--surface-2);
+  }
+  .inbox-compose input, .inbox-compose select, .inbox-due{
+    min-width:0;
+    height:38px;
+    border:1px solid var(--line);
+    border-radius:9px;
+    background:var(--surface);
+    color:var(--ink);
+    padding:0 11px;
+    font-size:12.5px;
+  }
+  .inbox-compose button{
+    height:38px;
+    padding:0 17px;
+    border:1px solid var(--accent);
+    border-radius:9px;
+    background:var(--accent);
+    color:var(--accent-ink);
+    font-size:12px;
+    font-weight:700;
+    cursor:pointer;
+  }
+  .inbox-content{ padding:6px 26px 22px; }
+  .inbox-status{
+    margin:14px 0 8px;
+    padding:13px 14px;
+    border-radius:10px;
+    background:var(--surface-2);
+    color:var(--ink-soft);
+    font-size:12px;
+    line-height:1.5;
+  }
+  .inbox-status.error{ background:var(--highlight-soft); color:var(--danger); }
+  .inbox-status button{
+    margin-left:7px;
+    border:0;
+    background:none;
+    color:var(--accent);
+    font-weight:750;
+    cursor:pointer;
+  }
+  .inbox-list{ display:flex; flex-direction:column; }
+  .inbox-task{
+    display:grid;
+    grid-template-columns:auto minmax(140px,1fr) auto auto auto;
+    align-items:center;
+    gap:10px;
+    padding:13px 2px;
+    border-bottom:1px solid var(--line-soft);
+  }
+  .inbox-task:last-child{ border-bottom:0; }
+  .inbox-task-main{ min-width:0; }
+  .inbox-task-title{
+    width:100%;
+    border:0;
+    background:transparent;
+    color:var(--ink);
+    padding:1px 0;
+    font-size:13.5px;
+  }
+  .inbox-task-title.done{ color:var(--done); text-decoration:line-through; }
+  .task-list-label{
+    display:block;
+    margin-top:3px;
+    overflow:hidden;
+    color:var(--ink-faint);
+    font-size:9.5px;
+    white-space:nowrap;
+    text-overflow:ellipsis;
+  }
+  .week-assign-btn{
+    height:32px;
+    padding:0 10px;
+    border:1px solid var(--accent-soft-line);
+    border-radius:8px;
+    background:var(--accent-soft);
+    color:var(--accent);
+    font-size:10.5px;
+    font-weight:700;
+    white-space:nowrap;
+    cursor:pointer;
+  }
+  .task-delete{
+    width:30px;
+    height:30px;
+    border:0;
+    border-radius:8px;
+    background:transparent;
+    color:var(--ink-faint);
+    font-size:16px;
+    cursor:pointer;
+  }
+  .task-delete:hover{ background:var(--surface-2); color:var(--danger); }
+  .completed-tasks{
+    margin-top:12px;
+    border-top:1px solid var(--line-soft);
+    padding-top:12px;
+  }
+  .completed-tasks summary{
+    color:var(--ink-soft);
+    font-size:11px;
+    font-weight:700;
+    cursor:pointer;
+  }
+  .completed-tasks .inbox-task{ opacity:.72; }
+  .google-task-row{ position:relative; }
+  .google-task-row::before{
+    content:'G';
+    position:absolute;
+    top:3px;
+    right:2px;
+    color:var(--highlight);
+    font-family:var(--font-mono);
+    font-size:7px;
+    font-weight:800;
+  }
+  #todoRows .row{
+    display:grid;
+    grid-template-columns:17px minmax(0,1fr) 20px 20px;
+    gap:6px;
+    align-items:center;
+  }
+  #todoRows .row .check{ grid-column:1; grid-row:1; }
+  #todoRows .row .row-text{
+    grid-column:2 / -1;
+    grid-row:1;
+    width:100%;
+  }
+  #todoRows .row .daychips{ grid-column:2; grid-row:2; }
+  #todoRows .row .row-remove{ grid-row:2; }
+  #todoRows .row .row-remove:nth-last-child(2){ grid-column:3; }
+  #todoRows .row .row-remove:last-child{ grid-column:4; }
   .week-grid{
     min-width:1040px;
     grid-template-columns:repeat(7, minmax(0,1fr));
@@ -1117,6 +1366,21 @@
     .signin-btn span{ display:none; }
     .signin-btn{ width:38px; padding:0; justify-content:center; }
     .sidebar{ grid-template-columns:1fr; }
+    .view-tabs{ align-items:flex-start; }
+    .tasks-connection{ display:none; }
+    .inbox-head{ padding:20px 18px 17px; }
+    .inbox-compose{
+      grid-template-columns:1fr;
+      padding:14px 18px;
+    }
+    .inbox-content{ padding:4px 18px 18px; }
+    .inbox-task{
+      grid-template-columns:auto minmax(0,1fr) auto;
+      gap:9px;
+    }
+    .inbox-task .inbox-due, .inbox-task .week-assign-btn{
+      grid-column:2 / -1;
+    }
     .week-board-head{
       min-width:0;
       padding:14px;
@@ -1200,7 +1464,18 @@
     </div>
   </header>
 
-  <main class="layout">
+  <nav class="view-tabs" aria-label="Planner views">
+    <div class="view-tab-list" role="tablist">
+      <button class="view-tab active" id="plannerTab" type="button" role="tab" aria-selected="true" aria-controls="plannerView">Planner</button>
+      <button class="view-tab" id="inboxTab" type="button" role="tab" aria-selected="false" aria-controls="inboxView">Inbox <span class="tab-count" id="inboxCount">0</span></button>
+    </div>
+    <div class="tasks-connection" id="tasksConnection" role="status" aria-live="polite">
+      <span class="tasks-connection-dot"></span>
+      <span id="tasksConnectionText">Google Tasks disconnected</span>
+    </div>
+  </nav>
+
+  <main class="layout" id="plannerView" role="tabpanel" aria-labelledby="plannerTab">
     <aside class="sidebar" aria-label="Weekly planning tools">
       <div class="card">
         <p class="card-title">Top Priorities</p>
@@ -1208,11 +1483,11 @@
       </div>
 
       <div class="card">
-        <p class="card-title">To&#8209;Do <span class="count" id="todoCount"></span></p>
+        <p class="card-title">This Week <span class="count" id="todoCount"></span></p>
         <div id="todoRows"></div>
         <div class="add-row bordered">
           <span class="add-glyph">+</span>
-          <input class="add-input" id="addTodo" placeholder="Add a to-do for the week&hellip;" />
+          <input class="add-input" id="addTodo" placeholder="Add a task to this week&hellip;" />
         </div>
       </div>
 
@@ -1242,7 +1517,33 @@
     </section>
   </main>
 
-  <footer class="hint">Each day lists what&rsquo;s blocked (tap + to add, tap an entry to edit or delete) with a short to-do strip below it. Toggling a letter chip on a weekly to-do (M T W T F S S) also drops it into that day&rsquo;s strip. Everything saves locally in this browser &mdash; sign in with Google (top right) to also pull your Calendar and sync your tasks via your own Google Drive.</footer>
+  <section class="inbox-view" id="inboxView" role="tabpanel" aria-labelledby="inboxTab" hidden>
+    <div class="inbox-panel">
+      <div class="inbox-head">
+        <div>
+          <p class="section-eyebrow">Google Tasks</p>
+          <h2 class="inbox-title">Inbox</h2>
+          <p class="inbox-description">Undated tasks land here until you assign them to a day or a week.</p>
+        </div>
+        <button class="inbox-refresh" id="refreshGoogleTasks" type="button">Refresh</button>
+      </div>
+      <div class="inbox-compose">
+        <input id="inboxAddInput" type="text" placeholder="Add a task to Inbox&hellip;" aria-label="New Inbox task">
+        <select id="inboxListSelect" aria-label="Google Task list"><option value="">Google Tasks</option></select>
+        <button id="inboxAddBtn" type="button">Add task</button>
+      </div>
+      <div class="inbox-content">
+        <div id="inboxStatus"></div>
+        <div class="inbox-list" id="inboxTaskList"></div>
+        <details class="completed-tasks" id="completedTasks">
+          <summary>Completed <span id="completedTaskCount">0</span></summary>
+          <div class="inbox-list" id="completedTaskList"></div>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <footer class="hint">Use Inbox for undated Google Tasks, assign a date to place one on a day, or move it to This Week without creating a fake deadline. Calendar events stay read-only; task changes sync back to Google Tasks.</footer>
 </div>
 
 <div class="theme-overlay" id="themeOverlay"></div>
@@ -1324,6 +1625,12 @@
   var googleEventsByWeek = {}; // isoWeekKey -> [{day, start, end, title, htmlLink, source:'google'}]
   var googleAccessToken = null;
   var googleTokenClient = null;
+  var googleTasks = [];
+  var googleTaskLists = [];
+  var googleTasksState = 'signed-out'; // signed-out | loading | ready | error
+  var googleTasksError = '';
+  var googleTaskMutationTimers = {};
+  var appView = window.location.hash === '#inbox' ? 'inbox' : 'planner';
 
   function uid(){ return Math.random().toString(36).slice(2, 10) + Date.now().toString(36); }
 
@@ -1371,6 +1678,13 @@
   var store = loadAll();
   var currentMonday = getMonday(new Date());
 
+  function ensureStoreShape(){
+    if (!store || typeof store !== 'object') store = { weeks: {} };
+    if (!store.weeks) store.weeks = {};
+    if (!store.googleTaskWeeks) store.googleTaskWeeks = {};
+  }
+  ensureStoreShape();
+
   function currentWeekData(){
     var key = isoWeekKey(currentMonday);
     if (!store.weeks[key]) store.weeks[key] = blankWeek();
@@ -1412,6 +1726,156 @@
 
   var todayReal = new Date();
 
+  function googleTaskKey(task){ return task.listId + ':' + task.id; }
+  function googleTaskWeek(task){ return store.googleTaskWeeks[googleTaskKey(task)] || ''; }
+  function isOpenGoogleTask(task){ return task.status !== 'completed' && !task.deleted && !task.hidden; }
+  function parseGoogleTaskDue(task){
+    if (!task.due) return null;
+    var parts = task.due.slice(0, 10).split('-').map(Number);
+    if (parts.length !== 3 || !parts[0] || !parts[1] || !parts[2]) return null;
+    return new Date(parts[0], parts[1] - 1, parts[2]);
+  }
+  function googleDueValue(date){
+    return date.getFullYear() + '-' + String(date.getMonth() + 1).padStart(2, '0') + '-' + String(date.getDate()).padStart(2, '0');
+  }
+  function googleDueTimestamp(date){ return googleDueValue(date) + 'T00:00:00.000Z'; }
+  function inboxGoogleTasks(){
+    return googleTasks.filter(function(task){
+      return isOpenGoogleTask(task) && !task.due && !googleTaskWeek(task);
+    });
+  }
+  function googleTasksForWeek(weekKey){
+    return googleTasks.filter(function(task){
+      return isOpenGoogleTask(task) && !task.due && googleTaskWeek(task) === weekKey;
+    });
+  }
+  function googleTasksForDay(date){
+    return googleTasks.filter(function(task){
+      var due = isOpenGoogleTask(task) ? parseGoogleTaskDue(task) : null;
+      return due && sameDay(due, date);
+    });
+  }
+  function setTasksConnection(state, text){
+    googleTasksState = state;
+    var connection = document.getElementById('tasksConnection');
+    connection.className = 'tasks-connection ' + (state === 'signed-out' ? '' : state);
+    document.getElementById('tasksConnectionText').textContent = text;
+  }
+  function renderViewState(){
+    var planner = document.getElementById('plannerView');
+    var inbox = document.getElementById('inboxView');
+    var plannerTab = document.getElementById('plannerTab');
+    var inboxTab = document.getElementById('inboxTab');
+    var isPlanner = appView === 'planner';
+    planner.hidden = !isPlanner;
+    inbox.hidden = isPlanner;
+    plannerTab.classList.toggle('active', isPlanner);
+    inboxTab.classList.toggle('active', !isPlanner);
+    plannerTab.setAttribute('aria-selected', isPlanner ? 'true' : 'false');
+    inboxTab.setAttribute('aria-selected', isPlanner ? 'false' : 'true');
+    document.getElementById('inboxCount').textContent = inboxGoogleTasks().length;
+  }
+
+  function renderGoogleTaskRow(task, completed){
+    var row = el('div', 'inbox-task');
+    var done = task.status === 'completed';
+    var check = el('button', 'check' + (done ? ' checked' : ''), {'type':'button', 'aria-label': done ? 'Mark incomplete' : 'Mark complete'});
+    check.innerHTML = checkSvg();
+    check.addEventListener('click', function(){
+      patchGoogleTask(task, { status: done ? 'needsAction' : 'completed' });
+    });
+
+    var main = el('div', 'inbox-task-main');
+    var title = el('input', 'inbox-task-title' + (done ? ' done' : ''), {'aria-label':'Task title'});
+    title.value = task.title || '';
+    title.addEventListener('input', function(){
+      task.title = title.value;
+      scheduleGoogleTaskPatch(task, { title: title.value });
+    });
+    var label = el('span', 'task-list-label');
+    var due = parseGoogleTaskDue(task);
+    label.textContent = task.listTitle + (due ? ' · Due ' + MONTH_NAMES[due.getMonth()] + ' ' + due.getDate() : '');
+    main.appendChild(title); main.appendChild(label);
+
+    var dueInput = el('input', 'inbox-due', {'type':'date', 'aria-label':'Due date'});
+    dueInput.value = due ? googleDueValue(due) : '';
+    dueInput.disabled = !!completed;
+    dueInput.addEventListener('change', function(){
+      if (!dueInput.value) return;
+      var parts = dueInput.value.split('-').map(Number);
+      assignGoogleTaskToDate(task, new Date(parts[0], parts[1] - 1, parts[2]));
+    });
+
+    var weekBtn = el('button', 'week-assign-btn', {'type':'button'});
+    weekBtn.textContent = 'Move to this week';
+    weekBtn.disabled = !!completed;
+    weekBtn.addEventListener('click', function(){ assignGoogleTaskToWeek(task, isoWeekKey(getMonday(new Date()))); });
+
+    var remove = el('button', 'task-delete', {'type':'button', 'aria-label':'Delete task', 'title':'Delete from Google Tasks'});
+    remove.textContent = '×';
+    remove.addEventListener('click', function(){ deleteGoogleTask(task); });
+
+    row.appendChild(check); row.appendChild(main); row.appendChild(dueInput); row.appendChild(weekBtn); row.appendChild(remove);
+    return row;
+  }
+
+  function renderInbox(){
+    var status = document.getElementById('inboxStatus');
+    var list = document.getElementById('inboxTaskList');
+    var completedList = document.getElementById('completedTaskList');
+    var completedWrap = document.getElementById('completedTasks');
+    var input = document.getElementById('inboxAddInput');
+    var select = document.getElementById('inboxListSelect');
+    var addBtn = document.getElementById('inboxAddBtn');
+    list.innerHTML = '';
+    completedList.innerHTML = '';
+    status.innerHTML = '';
+
+    var previousList = select.value;
+    select.innerHTML = '';
+    googleTaskLists.forEach(function(taskList){
+      var option = el('option'); option.value = taskList.id; option.textContent = taskList.title;
+      select.appendChild(option);
+    });
+    if (!googleTaskLists.length){
+      var placeholder = el('option'); placeholder.value = ''; placeholder.textContent = 'Google Tasks list';
+      select.appendChild(placeholder);
+    }
+    if (previousList && googleTaskLists.some(function(x){ return x.id === previousList; })) select.value = previousList;
+
+    var usable = googleAccessToken && googleTasksState === 'ready' && googleTaskLists.length;
+    input.disabled = !usable;
+    select.disabled = !usable;
+    addBtn.disabled = !usable;
+
+    if (!googleAccessToken){
+      var signedOut = el('div', 'inbox-status');
+      signedOut.textContent = 'Sign in with Google to load and organize your Google Tasks.';
+      var signIn = el('button', '', {'type':'button'}); signIn.textContent = 'Sign in';
+      signIn.addEventListener('click', function(){ requestGoogleSignIn(true); });
+      signedOut.appendChild(signIn); status.appendChild(signedOut);
+    } else if (googleTasksState === 'loading'){
+      status.appendChild(el('div', 'inbox-status')).textContent = 'Loading your Google Tasks…';
+    } else if (googleTasksState === 'error'){
+      var error = el('div', 'inbox-status error');
+      error.textContent = googleTasksError || 'Google Tasks could not be loaded.';
+      var retry = el('button', '', {'type':'button'}); retry.textContent = 'Try again';
+      retry.addEventListener('click', fetchGoogleTasks);
+      error.appendChild(retry); status.appendChild(error);
+    } else if (!googleTaskLists.length){
+      status.appendChild(el('div', 'inbox-status')).textContent = 'No Google Task lists were found.';
+    } else {
+      var inbox = inboxGoogleTasks();
+      if (!inbox.length) status.appendChild(el('div', 'inbox-status')).textContent = 'Inbox zero — every open task has a date or a week.';
+      inbox.forEach(function(task){ list.appendChild(renderGoogleTaskRow(task, false)); });
+    }
+
+    var completed = googleTasks.filter(function(task){ return task.status === 'completed' && !task.deleted && !task.hidden; });
+    document.getElementById('completedTaskCount').textContent = completed.length;
+    completedWrap.hidden = !completed.length;
+    completed.forEach(function(task){ completedList.appendChild(renderGoogleTaskRow(task, true)); });
+  }
+
   function render(){
     document.getElementById('weekHeading').textContent = fmtHeading(currentMonday);
     var data = currentWeekData();
@@ -1420,6 +1884,8 @@
     renderTodos(data);
     renderHabits(data);
     renderWeekGrid(data);
+    renderViewState();
+    renderInbox();
 
     if (googleAccessToken && !googleEventsByWeek[isoWeekKey(currentMonday)]) fetchGoogleEvents(currentMonday);
   }
@@ -1464,11 +1930,13 @@
   function renderTodos(data){
     var wrap = document.getElementById('todoRows');
     var countEl = document.getElementById('todoCount');
-    var openCount = data.todos.filter(function(t){ return !t.done; }).length;
-    countEl.textContent = data.todos.length ? (openCount + '/' + data.todos.length) : '';
+    var weekGoogleTasks = googleTasksForWeek(isoWeekKey(currentMonday));
+    var totalCount = data.todos.length + weekGoogleTasks.length;
+    var openCount = data.todos.filter(function(t){ return !t.done; }).length + weekGoogleTasks.length;
+    countEl.textContent = totalCount ? (openCount + '/' + totalCount) : '';
     wrap.innerHTML = '';
 
-    if (!data.todos.length){
+    if (!totalCount){
       wrap.appendChild(el('div', 'empty-hint')).textContent = 'Nothing yet — add a task below.';
     }
 
@@ -1507,11 +1975,57 @@
       row.appendChild(check); row.appendChild(input); row.appendChild(chips); row.appendChild(rm);
       wrap.appendChild(row);
     });
+
+    weekGoogleTasks.forEach(function(task){
+      var row = el('div', 'row google-task-row');
+      row.title = 'Google Tasks · ' + task.listTitle;
+
+      var check = el('button', 'check', {'type':'button', 'aria-label':'Mark complete'});
+      check.innerHTML = checkSvg();
+      check.addEventListener('click', function(){ patchGoogleTask(task, { status:'completed' }); });
+
+      var input = el('input', 'row-text', {'aria-label':'Task title'});
+      input.value = task.title || '';
+      input.addEventListener('input', function(){ task.title = input.value; scheduleGoogleTaskPatch(task, { title:input.value }); });
+
+      var chips = el('div', 'daychips');
+      DAY_LETTERS.forEach(function(letter, i){
+        var chip = el('button', 'chip', {'type':'button', 'aria-label':'Due ' + DAY_NAMES[i]});
+        if (sameDay(addDays(currentMonday, i), todayReal)) chip.classList.add('today-col');
+        chip.textContent = letter;
+        chip.title = 'Set due date to ' + DAY_NAMES[i];
+        chip.addEventListener('click', function(){ assignGoogleTaskToDate(task, addDays(currentMonday, i)); });
+        chips.appendChild(chip);
+      });
+
+      var back = el('button', 'row-remove', {'type':'button', 'aria-label':'Move to Inbox', 'title':'Move to Inbox'});
+      back.textContent = '↩';
+      back.addEventListener('click', function(){ moveGoogleTaskToInbox(task); });
+      var rm = el('button', 'row-remove', {'type':'button', 'aria-label':'Delete task', 'title':'Delete from Google Tasks'});
+      rm.textContent = '×';
+      rm.addEventListener('click', function(){ deleteGoogleTask(task); });
+
+      row.appendChild(check); row.appendChild(input); row.appendChild(chips); row.appendChild(back); row.appendChild(rm);
+      wrap.appendChild(row);
+    });
   }
 
   function addTodoFromInput(inputEl, presetDays){
     var text = inputEl.value.trim();
     if (!text) return;
+    if (googleAccessToken){
+      if (googleTasksState !== 'ready'){
+        setAccountMessage('Google Tasks is not ready yet. Open Inbox to see the connection status.');
+        return;
+      }
+      var dueDate = presetDays && presetDays.length ? addDays(currentMonday, presetDays[0]) : null;
+      var weekKey = dueDate ? '' : isoWeekKey(currentMonday);
+      inputEl.disabled = true;
+      createGoogleTask(text, googleTaskLists[0] && googleTaskLists[0].id, dueDate, weekKey)
+        .then(function(task){ if (task) inputEl.value = ''; })
+        .finally(function(){ inputEl.disabled = false; });
+      return;
+    }
     var data = currentWeekData();
     data.todos.push({ id: uid(), text: text, done: false, days: presetDays ? presetDays.slice() : [] });
     saveAll();
@@ -1601,8 +2115,9 @@
 
     var list = el('div', 'day-todo-list');
     var items = data.todos.filter(function(t){ return t.days.indexOf(dayIndex) > -1; });
+    var datedGoogleTasks = googleTasksForDay(addDays(currentMonday, dayIndex));
 
-    if (!items.length){
+    if (!items.length && !datedGoogleTasks.length){
       list.appendChild(el('div', 'empty-hint')).textContent = 'No items.';
     }
 
@@ -1624,6 +2139,26 @@
         if (pos > -1) t.days.splice(pos, 1);
         saveAll(); render();
       });
+
+      row.appendChild(check); row.appendChild(input); row.appendChild(un);
+      list.appendChild(row);
+    });
+
+    datedGoogleTasks.forEach(function(task){
+      var row = el('div', 'day-row google-task-row');
+      row.title = 'Google Tasks · ' + task.listTitle;
+      var check = el('button', 'check', {'type':'button', 'aria-label':'Mark complete'});
+      check.innerHTML = checkSvg();
+      check.addEventListener('click', function(){ patchGoogleTask(task, { status:'completed' }); });
+
+      var input = el('input', 'row-text', {'aria-label':'Task title'});
+      input.value = task.title || '';
+      input.addEventListener('input', function(){ task.title = input.value; scheduleGoogleTaskPatch(task, { title:input.value }); });
+
+      var un = el('button', 'day-unassign', {'type':'button', 'aria-label':'Move to this week'});
+      un.textContent = '↩';
+      un.title = 'Remove due date and keep in this week';
+      un.addEventListener('click', function(){ assignGoogleTaskToWeek(task, isoWeekKey(currentMonday)); });
 
       row.appendChild(check); row.appendChild(input); row.appendChild(un);
       list.appendChild(row);
@@ -1762,6 +2297,24 @@
   }
 
   // ---------- global add handlers ----------
+  document.getElementById('plannerTab').addEventListener('click', function(){ appView = 'planner'; history.replaceState(null, '', window.location.pathname + window.location.search); render(); });
+  document.getElementById('inboxTab').addEventListener('click', function(){ appView = 'inbox'; history.replaceState(null, '', '#inbox'); render(); });
+  document.getElementById('refreshGoogleTasks').addEventListener('click', function(){
+    if (googleAccessToken) fetchGoogleTasks(); else requestGoogleSignIn(true);
+  });
+  function addInboxTask(){
+    var input = document.getElementById('inboxAddInput');
+    var text = input.value.trim();
+    if (!text || googleTasksState !== 'ready') return;
+    var listId = document.getElementById('inboxListSelect').value || (googleTaskLists[0] && googleTaskLists[0].id);
+    input.disabled = true;
+    createGoogleTask(text, listId, null, '')
+      .then(function(task){ if (task) input.value = ''; })
+      .finally(function(){ input.disabled = false; input.focus(); });
+  }
+  document.getElementById('inboxAddBtn').addEventListener('click', addInboxTask);
+  document.getElementById('inboxAddInput').addEventListener('keydown', function(ev){ if (ev.key === 'Enter') addInboxTask(); });
+
   document.getElementById('addTodo').addEventListener('keydown', function(ev){
     if (ev.key === 'Enter'){ addTodoFromInput(ev.target, []); }
   });
@@ -1940,7 +2493,7 @@
     }
   });
 
-  // ---------- Google sign-in, Calendar pull, Drive task sync ----------
+  // ---------- Google sign-in, Calendar, Tasks, and Drive sync ----------
   // `google-config.js` is owned by the site developer. Its client ID is a public
   // identifier, not a secret; never add an OAuth client secret to this static app.
   var googleConfig = window.WEEKLY_PLANNER_CONFIG || {};
@@ -1948,6 +2501,7 @@
   var GCAL_WAS_SIGNED_IN_KEY = 'weekly-planner-gcal-was-signed-in';
   var GOOGLE_SCOPES = [
     'https://www.googleapis.com/auth/calendar.readonly',
+    'https://www.googleapis.com/auth/tasks',
     'https://www.googleapis.com/auth/drive.appdata',
     'https://www.googleapis.com/auth/userinfo.email',
     'https://www.googleapis.com/auth/userinfo.profile'
@@ -2008,6 +2562,7 @@
     accountDropdown.classList.remove('open');
     googleLegend.classList.remove('connected');
     googleLegendLabel.textContent = 'Google Calendar';
+    setTasksConnection('signed-out', 'Google Tasks disconnected');
   }
 
   accountBtn.addEventListener('click', function(ev){
@@ -2079,6 +2634,7 @@
           try{ remote = text ? JSON.parse(text) : null; }catch(e){ remote = null; }
           if (remote && remote.weeks && Object.keys(remote.weeks).length){
             store = remote;
+            ensureStoreShape();
             saveAllLocalOnly();
             render();
             setSyncStatus('Synced just now');
@@ -2096,6 +2652,182 @@
   }
 
   function saveAllLocalOnly(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(store)); }
+
+  function googleTasksRequest(url, options){
+    options = options || {};
+    options.headers = googleAuthHeaders(options.headers || {});
+    return fetch(url, options).then(function(res){
+      return res.text().then(function(text){
+        var json = null;
+        try{ json = text ? JSON.parse(text) : null; }catch(e){ json = null; }
+        if (!res.ok){
+          if (res.status === 401) handleTokenExpired();
+          var message = json && json.error && json.error.message ? json.error.message : 'Google Tasks request failed';
+          var error = new Error(message); error.status = res.status; throw error;
+        }
+        return json;
+      });
+    });
+  }
+
+  function fetchAllGooglePages(url, field){
+    var all = [];
+    function next(pageToken){
+      var pageUrl = url + (pageToken ? '&pageToken=' + encodeURIComponent(pageToken) : '');
+      return googleTasksRequest(pageUrl).then(function(json){
+        all = all.concat((json && json[field]) || []);
+        return json && json.nextPageToken ? next(json.nextPageToken) : all;
+      });
+    }
+    return next('');
+  }
+
+  function fetchGoogleTasks(){
+    if (!googleAccessToken) return Promise.resolve();
+    googleTasksError = '';
+    setTasksConnection('loading', 'Loading Google Tasks…');
+    render();
+    return fetchAllGooglePages('https://tasks.googleapis.com/tasks/v1/users/@me/lists?maxResults=100', 'items')
+      .then(function(lists){
+        googleTaskLists = lists;
+        return Promise.all(lists.map(function(taskList){
+          var url = 'https://tasks.googleapis.com/tasks/v1/lists/' + encodeURIComponent(taskList.id)
+            + '/tasks?maxResults=100&showCompleted=true&showHidden=false';
+          return fetchAllGooglePages(url, 'items').then(function(tasks){
+            return tasks.map(function(task){
+              task.listId = taskList.id;
+              task.listTitle = taskList.title || 'Google Tasks';
+              return task;
+            });
+          });
+        }));
+      })
+      .then(function(taskGroups){
+        googleTasks = [].concat.apply([], taskGroups);
+        googleTasks.sort(function(a, b){ return String(a.position || '').localeCompare(String(b.position || '')); });
+        setTasksConnection('ready', 'Google Tasks synced');
+        setSyncStatus('Calendar and tasks synced just now');
+        render();
+      })
+      .catch(function(error){
+        googleTasksError = error.status === 403
+          ? 'Google Tasks access is not ready. Enable the Google Tasks API, add the Tasks OAuth scope, then sign out and reconnect.'
+          : 'Could not load Google Tasks: ' + error.message;
+        setTasksConnection('error', 'Google Tasks needs attention');
+        render();
+      });
+  }
+
+  function taskListTitle(listId){
+    var match = googleTaskLists.find(function(list){ return list.id === listId; });
+    return match ? match.title : 'Google Tasks';
+  }
+
+  function patchGoogleTask(task, changes, quiet){
+    var listId = task.listId;
+    Object.keys(changes).forEach(function(key){ task[key] = changes[key]; });
+    setTasksConnection('loading', 'Saving Google Tasks…');
+    return googleTasksRequest('https://tasks.googleapis.com/tasks/v1/lists/' + encodeURIComponent(listId) + '/tasks/' + encodeURIComponent(task.id), {
+      method:'PATCH',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify(changes)
+    }).then(function(updated){
+      if (updated){
+        Object.assign(task, updated);
+        task.listId = listId;
+        task.listTitle = taskListTitle(listId);
+      }
+      setTasksConnection('ready', 'Google Tasks synced');
+      if (!quiet) render();
+      return task;
+    }).catch(function(error){
+      googleTasksError = 'Could not save task: ' + error.message;
+      setTasksConnection('error', 'Task could not be saved');
+      render();
+      return null;
+    });
+  }
+
+  function scheduleGoogleTaskPatch(task, changes){
+    task.__pendingPatch = Object.assign(task.__pendingPatch || {}, changes);
+    var key = googleTaskKey(task);
+    clearTimeout(googleTaskMutationTimers[key]);
+    googleTaskMutationTimers[key] = setTimeout(function(){
+      var pending = task.__pendingPatch || {};
+      delete task.__pendingPatch;
+      delete googleTaskMutationTimers[key];
+      patchGoogleTask(task, pending, true).catch(function(){});
+    }, 650);
+  }
+
+  function createGoogleTask(title, listId, dueDate, weekKey){
+    if (!listId){
+      googleTasksError = 'No Google Task list is available for new tasks.';
+      setTasksConnection('error', 'Google Tasks needs attention');
+      render();
+      return Promise.resolve(null);
+    }
+    var body = { title:title, status:'needsAction' };
+    if (dueDate) body.due = googleDueTimestamp(dueDate);
+    setTasksConnection('loading', 'Adding Google Task…');
+    return googleTasksRequest('https://tasks.googleapis.com/tasks/v1/lists/' + encodeURIComponent(listId) + '/tasks', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify(body)
+    }).then(function(task){
+      task.listId = listId;
+      task.listTitle = taskListTitle(listId);
+      googleTasks.unshift(task);
+      if (weekKey) store.googleTaskWeeks[googleTaskKey(task)] = weekKey;
+      saveAll();
+      setTasksConnection('ready', 'Google Tasks synced');
+      render();
+      return task;
+    }).catch(function(error){
+      googleTasksError = 'Could not add task: ' + error.message;
+      setTasksConnection('error', 'Task could not be added');
+      render();
+      return null;
+    });
+  }
+
+  function deleteGoogleTask(task){
+    setTasksConnection('loading', 'Deleting Google Task…');
+    return googleTasksRequest('https://tasks.googleapis.com/tasks/v1/lists/' + encodeURIComponent(task.listId) + '/tasks/' + encodeURIComponent(task.id), {
+      method:'DELETE'
+    }).then(function(){
+      googleTasks = googleTasks.filter(function(item){ return googleTaskKey(item) !== googleTaskKey(task); });
+      delete store.googleTaskWeeks[googleTaskKey(task)];
+      saveAll();
+      setTasksConnection('ready', 'Google Tasks synced');
+      render();
+    }).catch(function(error){
+      googleTasksError = 'Could not delete task: ' + error.message;
+      setTasksConnection('error', 'Task could not be deleted');
+      render();
+    });
+  }
+
+  function assignGoogleTaskToDate(task, date){
+    delete store.googleTaskWeeks[googleTaskKey(task)];
+    saveAll();
+    return patchGoogleTask(task, { due:googleDueTimestamp(date) });
+  }
+
+  function assignGoogleTaskToWeek(task, weekKey){
+    store.googleTaskWeeks[googleTaskKey(task)] = weekKey;
+    saveAll();
+    return patchGoogleTask(task, { due:null });
+  }
+
+  function moveGoogleTaskToInbox(task){
+    delete store.googleTaskWeeks[googleTaskKey(task)];
+    saveAll();
+    if (task.due) return patchGoogleTask(task, { due:null });
+    setTasksConnection('ready', 'Google Tasks synced');
+    render();
+    return Promise.resolve(task);
+  }
 
   function fetchGoogleEvents(monday){
     var timeMin = new Date(monday); timeMin.setHours(0,0,0,0);
@@ -2163,6 +2895,7 @@
     googleEventsByWeek = {};
     fetchGoogleEvents(currentMonday);
     pullStoreFromDrive();
+    fetchGoogleTasks();
 
     fetch('https://www.googleapis.com/oauth2/v3/userinfo', { headers: googleAuthHeaders() })
       .then(function(res){ return res.ok ? res.json() : null; })
@@ -2183,6 +2916,7 @@
       googleTokenClient = google.accounts.oauth2.initTokenClient({
         client_id: GOOGLE_CLIENT_ID,
         scope: GOOGLE_SCOPES,
+        include_granted_scopes: true,
         callback: function(resp){
           if (resp.error || !resp.access_token){
             setSignedOutUI();
@@ -2208,7 +2942,14 @@
   }
 
   signInBtn.addEventListener('click', function(){ requestGoogleSignIn(true); });
-  accountSyncNowBtn.addEventListener('click', function(){ if (googleAccessToken) pullStoreFromDrive(); });
+  accountSyncNowBtn.addEventListener('click', function(){
+    if (googleAccessToken){
+      pullStoreFromDrive();
+      fetchGoogleTasks();
+      googleEventsByWeek = {};
+      fetchGoogleEvents(currentMonday);
+    }
+  });
   accountSignOutBtn.addEventListener('click', function(){
     if (googleAccessToken && typeof google !== 'undefined' && google.accounts && google.accounts.oauth2){
       google.accounts.oauth2.revoke(googleAccessToken, function(){});
@@ -2216,6 +2957,9 @@
     googleAccessToken = null;
     driveFileId = null;
     googleEventsByWeek = {};
+    googleTasks = [];
+    googleTaskLists = [];
+    googleTasksError = '';
     localStorage.removeItem(GCAL_WAS_SIGNED_IN_KEY);
     setSignedOutUI();
     render();

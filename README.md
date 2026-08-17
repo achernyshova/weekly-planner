@@ -1,6 +1,6 @@
 # Weekly Planner
 
-A single-file weekly planner: top priorities, a to-do list (week-only or assigned to specific days), a habit tracker, a manual "blocked time" schedule per day, and an optional Google sign-in that pulls your Calendar and syncs your tasks across devices via your own Google Drive. No build step, no backend — it's one static `index.html`.
+A single-file weekly planner: top priorities, a weekly task list, a Google Tasks Inbox, a habit tracker, a manual "blocked time" schedule per day, and an optional Google sign-in that pulls Calendar events and syncs Google Tasks. No build step, no backend — it's one static `index.html`.
 
 ## Run locally
 
@@ -21,18 +21,19 @@ Click the sliders icon next to "Today" to open the design panel — background/s
 Click **Sign in with Google** in the top-right corner. Google opens its own account-chooser and consent popup — you never enter a Client ID anywhere in the app itself; that's a one-time setup value the site owner configures in a separate file (see below). Signing in does two things, both running entirely client-side — no backend, nothing sent to any server but Google:
 
 - **Calendar (read-only)**: your events show up alongside your manual "blocked" time, tagged with a small **G** badge (click one to open it in Google Calendar).
-- **Task sync**: your to-dos, priorities, habits, and blocked time are also saved as a private file in your own Google Drive's hidden "app data" folder (invisible in your normal Drive, not shared with anyone, not readable by any other app). Sign in from another device/browser with the same Google account and your tasks are pulled down automatically. Every change syncs back up a couple seconds after you stop typing.
+- **Google Tasks**: undated tasks appear in Inbox, dated tasks appear on their assigned day, and changes to titles, completion, dates, and deletions sync both ways. Week-only assignments stay undated in Google Tasks and are saved as private planner metadata.
+- **Planner data sync**: priorities, habits, blocked time, local tasks, and week-only Google Task assignments are saved as a private file in your own Google Drive's hidden "app data" folder.
 
 If you never sign in, everything still works exactly as before, saved only to this browser's `localStorage`. If the app isn't configured yet, or the popup is blocked or cancelled, a small message under the Sign in button explains what happened.
 
 ### One-time owner setup (~10 minutes)
 
-The token popup still requires an OAuth **Web application Client ID** registered in [Google Cloud Console](https://console.cloud.google.com) — that's a Google platform requirement for any app reading a user's Calendar or Drive data, not something this app can skip. It's a public identifier (safe to commit), not a secret. You only do this once, in [`google-config.js`](google-config.js) — regular visitors never see it or paste it anywhere.
+The token popup still requires an OAuth **Web application Client ID** registered in [Google Cloud Console](https://console.cloud.google.com) — that's a Google platform requirement for any app reading a user's Calendar, Tasks, or Drive data, not something this app can skip. It's a public identifier (safe to commit), not a secret. You only do this once, in [`google-config.js`](google-config.js) — regular visitors never see it or paste it anywhere.
 
 1. Create a new project (or pick an existing one).
-2. **APIs & Services → Library** → search "Google Calendar API" → **Enable**. Also search "Google Drive API" → **Enable**.
+2. **APIs & Services → Library** → enable **Google Calendar API**, **Google Drive API**, and **Google Tasks API**.
 3. **APIs & Services → OAuth consent screen** → choose **External** → fill in app name + your email → under "Test users" add your own Google account (keeps the app in testing mode, so no Google review is needed for personal use).
-   - Under **Data Access → Add or Remove Scopes**, add: `.../auth/calendar.readonly`, `.../auth/drive.appdata`, `.../auth/userinfo.email`, `.../auth/userinfo.profile`.
+   - Under **Data Access → Add or Remove Scopes**, add: `.../auth/calendar.readonly`, `.../auth/tasks`, `.../auth/drive.appdata`, `.../auth/userinfo.email`, `.../auth/userinfo.profile`.
 4. **APIs & Services → Credentials → Create Credentials → OAuth client ID** → Application type: **Web application**.
 5. Under **Authorized JavaScript origins**, add:
    - `http://localhost:8000` (for local use)
@@ -60,4 +61,4 @@ Push to `main` and it updates automatically within a minute or two.
 
 ## Data
 
-Everything — to-dos, priorities, habits, blocked time, your theme — is saved in this browser's `localStorage`, per week, regardless of sign-in. Signing in additionally mirrors your tasks (not your theme, and not Calendar events, which stay read-only) to a private file in your own Google Drive, so they follow you to other devices. Nothing ever passes through a third-party server — your browser talks to Google directly.
+Planner data — priorities, habits, blocked time, local tasks, week assignments, and your theme — is saved in this browser's `localStorage`. Signing in also reads and writes your Google Tasks and mirrors planner-only data (except the theme) to a private file in your own Google Drive. Calendar events remain read-only. Nothing passes through a third-party server; your browser talks to Google directly.
