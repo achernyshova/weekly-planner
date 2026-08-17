@@ -9,19 +9,19 @@
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <style>
   :root{
-    --bg: #edeae1;
-    --surface: #fbfaf6;
+    --bg: #f3f1eb;
+    --surface: #fffdf8;
     --surface-2: #f2efe6;
-    --ink: #2a2924;
+    --ink: #222722;
     --ink-soft: #726d61;
     --ink-faint: #a49d8c;
     --line: #d9d2c1;
     --line-soft: #e6e0d2;
-    --accent: #3d5346;
+    --accent: #435f4c;
     --accent-ink: #f5f7f4;
     --accent-soft: #dde5da;
     --accent-soft-line: #c3d0be;
-    --highlight: #c97a3a;
+    --highlight: #d17b47;
     --highlight-soft: #f2e0cd;
     --done: #a49d8c;
     --danger: #a5473a;
@@ -804,20 +804,361 @@
     border-color:var(--accent);
   }
   .theme-actions button:hover{ filter:brightness(0.97); }
+
+  /* ---------- refined workspace ---------- */
+  body{
+    min-height:100vh;
+    background:
+      radial-gradient(circle at 8% 0%, var(--accent-soft) 0, transparent 27rem),
+      var(--bg);
+  }
+  button, input, select{ font:inherit; }
+  button{ -webkit-tap-highlight-color:transparent; }
+  .shell{
+    max-width:1540px;
+    padding:22px 26px 54px;
+  }
+  .topbar{
+    align-items:center;
+    padding:16px 18px;
+    margin-bottom:18px;
+    border:1px solid var(--line);
+    border-radius:calc(var(--radius-l) + 4px);
+    background:color-mix(in srgb, var(--surface) 92%, transparent);
+    box-shadow:var(--shadow);
+    backdrop-filter:blur(16px);
+    -webkit-backdrop-filter:blur(16px);
+  }
+  .brand-lockup{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    min-width:0;
+  }
+  .brand-mark{
+    width:42px;
+    height:42px;
+    flex:0 0 42px;
+    display:grid;
+    place-items:center;
+    border-radius:12px;
+    background:var(--accent);
+    color:var(--accent-ink);
+    font-family:var(--font-display);
+    font-size:21px;
+    font-weight:700;
+    box-shadow:inset 0 0 0 1px rgba(255,255,255,.14);
+  }
+  .brand{
+    margin:0 0 3px;
+    font-family:var(--font-body);
+    font-size:10px;
+    line-height:1;
+    font-weight:750;
+    letter-spacing:.16em;
+    color:var(--ink-faint);
+  }
+  .week-heading{
+    font-size:25px;
+    line-height:1.08;
+    letter-spacing:-.02em;
+  }
+  .week-nav{ gap:9px; }
+  .nav-cluster{
+    display:flex;
+    align-items:center;
+    gap:4px;
+    padding:4px;
+    border:1px solid var(--line);
+    border-radius:999px;
+    background:var(--surface-2);
+  }
+  .nav-cluster .nav-btn{
+    border:0;
+    background:transparent;
+  }
+  .nav-cluster .nav-btn:hover{ background:var(--surface); }
+  .nav-btn, .today-btn, .signin-btn{ height:38px; }
+  .nav-btn{ width:38px; }
+  .today-btn{
+    padding:0 16px;
+    border:0;
+    background:var(--surface);
+    box-shadow:0 1px 2px rgba(20,18,14,.08);
+  }
+  #themeToggle{
+    border-radius:11px;
+    border-color:var(--line);
+  }
+  .signin-btn{
+    padding:0 15px 0 11px;
+    border-radius:11px;
+    box-shadow:0 1px 2px rgba(20,18,14,.05);
+  }
+  .account-btn{ width:38px; height:38px; }
+  .account-dropdown, .account-message{ top:46px; }
+
+  .layout{
+    grid-template-columns:300px minmax(0,1fr);
+    gap:18px;
+    align-items:start;
+  }
+  .sidebar{ gap:12px; }
+  .card{
+    padding:18px;
+    border-radius:calc(var(--radius-l) + 2px);
+    box-shadow:0 1px 2px rgba(20,18,14,.04);
+  }
+  .card-title{
+    margin-bottom:14px;
+    font-family:var(--font-body);
+    font-size:10px;
+    font-weight:750;
+    letter-spacing:.13em;
+  }
+  .row{ padding:8px 0; }
+  .row-text{ font-size:13.5px; }
+  .priority-index{
+    width:22px;
+    height:22px;
+    display:grid;
+    place-items:center;
+    border-radius:7px;
+    background:var(--surface-2);
+    color:var(--ink-soft);
+    font-size:10px;
+  }
+  .check{ border-radius:6px; }
+  .add-row{
+    margin-top:7px;
+    padding:9px 10px;
+    border-radius:9px;
+    background:var(--surface-2);
+  }
+  .add-row.bordered{ border:0; }
+  .add-input{ font-size:12.5px; }
+  .habit-head{ grid-template-columns:1fr repeat(7, 21px); }
+  .habit-row{ grid-template-columns:1fr repeat(7, 21px); }
+
+  .week-board{
+    min-width:0;
+    overflow-x:auto;
+    border:1px solid var(--line);
+    border-radius:calc(var(--radius-l) + 3px);
+    background:var(--surface);
+    box-shadow:var(--shadow);
+    scrollbar-width:thin;
+    scrollbar-color:var(--line) transparent;
+  }
+  .week-board-head{
+    position:sticky;
+    left:0;
+    z-index:2;
+    min-width:min(100%, 1040px);
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:20px;
+    padding:17px 19px 15px;
+    border-bottom:1px solid var(--line);
+    background:var(--surface);
+  }
+  .section-eyebrow{
+    margin:0 0 3px;
+    font-size:9px;
+    font-weight:750;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--ink-faint);
+  }
+  .week-board-title{
+    margin:0;
+    font-family:var(--font-display);
+    font-size:18px;
+    line-height:1.2;
+  }
+  .calendar-legend{
+    display:flex;
+    align-items:center;
+    gap:14px;
+    color:var(--ink-soft);
+    font-size:10.5px;
+    white-space:nowrap;
+  }
+  .legend-item{ display:flex; align-items:center; gap:6px; }
+  .legend-dot{
+    width:8px;
+    height:8px;
+    border-radius:3px;
+    background:var(--accent);
+  }
+  .legend-dot.google{ background:var(--highlight); }
+  #googleLegend.connected{ color:var(--accent); font-weight:700; }
+  #googleLegend.connected .legend-dot{
+    background:var(--accent);
+    box-shadow:0 0 0 3px var(--accent-soft);
+  }
+  .week-grid{
+    min-width:1040px;
+    grid-template-columns:repeat(7, minmax(0,1fr));
+    gap:0;
+  }
+  .day-card{
+    min-width:0;
+    min-height:520px;
+    border:0;
+    border-left:1px solid var(--line-soft);
+    border-radius:0;
+    box-shadow:none;
+  }
+  .day-card:first-child{ border-left:0; }
+  .day-card.is-today{
+    border-color:var(--accent-soft-line);
+    background:linear-gradient(180deg, var(--accent-soft) 0, var(--surface) 170px);
+    box-shadow:inset 0 3px 0 var(--accent);
+  }
+  .day-head{
+    position:relative;
+    padding:15px 13px 13px;
+    min-height:76px;
+  }
+  .day-name{
+    font-family:var(--font-body);
+    font-size:10px;
+    line-height:1;
+    font-weight:750;
+    letter-spacing:.12em;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+  }
+  .day-date{
+    margin-top:7px;
+    font-family:var(--font-display);
+    font-size:19px;
+    line-height:1;
+    color:var(--ink);
+  }
+  .today-pill{
+    position:absolute;
+    top:14px;
+    right:10px;
+    margin:0;
+    padding:3px 6px;
+    font-size:7px;
+  }
+  .day-schedule-wrap{ padding:11px 10px 10px; }
+  .schedule-head{ margin-bottom:8px; }
+  .schedule-add{
+    width:24px;
+    height:24px;
+    border-radius:8px;
+    font-size:15px;
+  }
+  .event-list{ max-height:215px; }
+  .event-row{
+    position:relative;
+    align-items:stretch;
+    gap:7px;
+    margin-bottom:6px;
+    padding:8px;
+    border:1px solid var(--accent-soft-line);
+    border-radius:8px;
+    background:var(--accent-soft);
+  }
+  .event-row:last-of-type{ border-bottom:1px solid var(--accent-soft-line); }
+  .event-row:hover{ background:var(--accent-soft); filter:brightness(.98); }
+  .event-row-bar{ width:3px; }
+  .event-row-title{ font-size:11.5px; }
+  .event-row-time{ margin-top:3px; }
+  .event-row.gcal{
+    border-color:color-mix(in srgb, var(--highlight) 35%, var(--surface));
+    background:var(--highlight-soft);
+  }
+  .event-row.gcal:hover{ background:var(--highlight-soft); }
+  .event-row.gcal .event-row-title::after{
+    content:'Google';
+    width:auto;
+    padding:0 4px;
+  }
+  .day-todo-wrap{ padding:10px 11px 12px; }
+  .day-todo-label, .schedule-label{ font-weight:700; }
+  .day-todo-list{ max-height:135px; }
+  .day-row{
+    align-items:center;
+    padding:6px 0;
+    border-bottom:1px solid var(--line-soft);
+  }
+  .day-row:last-child{ border-bottom:0; }
+  .day-row .row-text{ font-size:12.5px; }
+  .day-add{
+    margin-top:10px;
+    padding:8px 9px;
+    border:0;
+    border-radius:8px;
+    background:var(--surface-2);
+  }
+  footer.hint{
+    max-width:720px;
+    margin:22px auto 0;
+    line-height:1.6;
+  }
+
+  @media (max-width:1180px){
+    .layout{ grid-template-columns:1fr; }
+    .sidebar{ display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); }
+  }
+  @media (max-width:780px){
+    .shell{ padding:12px 12px 38px; }
+    .topbar{ padding:13px; gap:13px; }
+    .brand-mark{ width:38px; height:38px; flex-basis:38px; border-radius:10px; }
+    .week-heading{ font-size:20px; }
+    .week-nav{ width:100%; justify-content:space-between; }
+    .nav-cluster{ flex:1 1 auto; justify-content:center; }
+    .signin-btn span{ display:none; }
+    .signin-btn{ width:38px; padding:0; justify-content:center; }
+    .sidebar{ grid-template-columns:1fr; }
+    .week-board-head{
+      min-width:0;
+      padding:14px;
+      align-items:flex-start;
+      flex-direction:column;
+      gap:10px;
+    }
+    .calendar-legend{ width:100%; }
+    .week-grid{
+      min-width:0;
+      grid-template-columns:repeat(7, minmax(278px, 82vw));
+      scroll-snap-type:x mandatory;
+    }
+    .day-card{
+      min-height:485px;
+      scroll-snap-align:start;
+    }
+    .row-remove, .day-unassign{ opacity:1; }
+  }
+  @media (max-width:430px){
+    #themeToggle{ flex:0 0 auto; }
+    .calendar-legend{ gap:10px; font-size:9.5px; }
+  }
 </style>
 </head>
 <body>
 
 <div class="shell">
-  <div class="topbar">
-    <div>
+  <header class="topbar">
+    <div class="brand-lockup">
+      <div class="brand-mark" aria-hidden="true">W</div>
+      <div>
       <p class="brand">Weekly Planner</p>
       <h1 class="week-heading" id="weekHeading">Week</h1>
+      </div>
     </div>
     <div class="week-nav">
-      <button class="nav-btn" id="prevWeek" aria-label="Previous week">&#8592;</button>
-      <button class="today-btn" id="gotoToday">Today</button>
-      <button class="nav-btn" id="nextWeek" aria-label="Next week">&#8594;</button>
+      <div class="nav-cluster" aria-label="Week navigation">
+        <button class="nav-btn" id="prevWeek" aria-label="Previous week">&#8592;</button>
+        <button class="today-btn" id="gotoToday">Today</button>
+        <button class="nav-btn" id="nextWeek" aria-label="Next week">&#8594;</button>
+      </div>
       <button class="nav-btn" id="themeToggle" aria-label="Open design panel" title="Design panel">
         <svg viewBox="0 0 20 20" width="16" height="16" fill="none" xmlns="http://www.w3.org/2000/svg">
           <circle cx="5" cy="6" r="1.6" fill="currentColor"/>
@@ -857,10 +1198,10 @@
         </div>
       </div>
     </div>
-  </div>
+  </header>
 
-  <div class="layout">
-    <div class="sidebar">
+  <main class="layout">
+    <aside class="sidebar" aria-label="Weekly planning tools">
       <div class="card">
         <p class="card-title">Top Priorities</p>
         <div class="priority-rows" id="priorityRows"></div>
@@ -884,10 +1225,22 @@
           <input class="add-input" id="addHabit" placeholder="Add a habit&hellip;" />
         </div>
       </div>
-    </div>
+    </aside>
 
-    <div class="week-grid" id="weekGrid"></div>
-  </div>
+    <section class="week-board" aria-labelledby="weekBoardTitle">
+      <div class="week-board-head">
+        <div>
+          <p class="section-eyebrow">Your week at a glance</p>
+          <h2 class="week-board-title" id="weekBoardTitle">Schedule &amp; daily tasks</h2>
+        </div>
+        <div class="calendar-legend" aria-label="Calendar legend">
+          <span class="legend-item"><span class="legend-dot"></span>Personal block</span>
+          <span class="legend-item" id="googleLegend"><span class="legend-dot google"></span><span id="googleLegendLabel">Google Calendar</span></span>
+        </div>
+      </div>
+      <div class="week-grid" id="weekGrid"></div>
+    </section>
+  </main>
 
   <footer class="hint">Each day lists what&rsquo;s blocked (tap + to add, tap an entry to edit or delete) with a short to-do strip below it. Toggling a letter chip on a weekly to-do (M T W T F S S) also drops it into that day&rsquo;s strip. Everything saves locally in this browser &mdash; sign in with Google (top right) to also pull your Calendar and sync your tasks via your own Google Drive.</footer>
 </div>
@@ -963,7 +1316,7 @@
 
 <script>
 (function(){
-  var DAY_NAMES = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  var DAY_NAMES = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
   var DAY_LETTERS = ['M','T','W','T','F','S','S'];
   var MONTH_NAMES = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   var STORAGE_KEY = 'weekly-planner-v1';
@@ -1219,7 +1572,9 @@
       var date = addDays(currentMonday, i);
       var isToday = sameDay(date, todayReal);
 
-      var card = el('div', 'day-card' + (isToday ? ' is-today' : ''));
+      var card = el('article', 'day-card' + (isToday ? ' is-today' : ''));
+      card.setAttribute('aria-label', DAY_NAMES[i] + ', ' + MONTH_NAMES[date.getMonth()] + ' ' + date.getDate());
+      if (isToday) card.setAttribute('aria-current', 'date');
 
       var head = el('div', 'day-head');
       var name = el('p', 'day-name');
@@ -1319,7 +1674,7 @@
       row.appendChild(el('span', 'event-row-bar'));
       var main = el('div', 'event-row-main');
       main.appendChild(el('span', 'event-row-title')).textContent = ev.title;
-      main.appendChild(el('span', 'event-row-time')).textContent = formatTimeLabel(ev.start) + '–' + formatTimeLabel(ev.end);
+      main.appendChild(el('span', 'event-row-time')).textContent = ev.allDay ? 'All day' : formatTimeLabel(ev.start) + '–' + formatTimeLabel(ev.end);
       row.appendChild(main);
       if (isGoogle){
         row.title = 'Open in Google Calendar';
@@ -1430,7 +1785,7 @@
 
   // ---------- design panel ----------
   var THEME_KEY = 'weekly-planner-theme-v1';
-  var THEME_DEFAULTS = { bg: '#edeae1', surface: '#fbfaf6', ink: '#2a2924', accent: '#3d5346', highlight: '#c97a3a', font: 'serif', radius: 14, shadow: 'soft' };
+  var THEME_DEFAULTS = { bg: '#f3f1eb', surface: '#fffdf8', ink: '#222722', accent: '#435f4c', highlight: '#d17b47', font: 'serif', radius: 14, shadow: 'soft' };
   var FONT_STACKS = {
     serif: 'Georgia, "Iowan Old Style", "Palatino Linotype", Palatino, serif',
     sans: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
@@ -1610,6 +1965,8 @@
   var accountSyncStatus = document.getElementById('accountSyncStatus');
   var accountSyncNowBtn = document.getElementById('accountSyncNow');
   var accountSignOutBtn = document.getElementById('accountSignOut');
+  var googleLegend = document.getElementById('googleLegend');
+  var googleLegendLabel = document.getElementById('googleLegendLabel');
 
   var driveFileId = null;
   var driveSyncTimer = null;
@@ -1627,6 +1984,8 @@
     accountBtn.style.display = 'flex';
     accountName.textContent = profile.name || profile.email || 'Signed in';
     accountEmail.textContent = profile.email || '';
+    googleLegend.classList.add('connected');
+    googleLegendLabel.textContent = 'Calendar connected';
     if (profile.picture){
       accountAvatar.src = profile.picture;
       accountAvatar.style.display = 'block';
@@ -1647,6 +2006,8 @@
     signInBtn.style.display = 'flex';
     accountBtn.style.display = 'none';
     accountDropdown.classList.remove('open');
+    googleLegend.classList.remove('connected');
+    googleLegendLabel.textContent = 'Google Calendar';
   }
 
   accountBtn.addEventListener('click', function(ev){
@@ -1757,19 +2118,32 @@
         var key = isoWeekKey(monday);
         var list = [];
         (json.items || []).forEach(function(item){
-          if (!item.start || !item.start.dateTime || !item.end || !item.end.dateTime) return; // skip all-day events
-          var start = new Date(item.start.dateTime);
-          var end = new Date(item.end.dateTime);
-          var dayIndex = Math.round((startOfDay(start) - startOfDay(monday)) / 86400000);
-          if (dayIndex < 0 || dayIndex > 6) return;
-          list.push({
-            day: dayIndex,
-            start: String(start.getHours()).padStart(2,'0') + ':' + String(start.getMinutes()).padStart(2,'0'),
-            end: String(end.getHours()).padStart(2,'0') + ':' + String(end.getMinutes()).padStart(2,'0'),
-            title: item.summary || '(untitled)',
-            htmlLink: item.htmlLink,
-            source: 'google'
-          });
+          if (!item.start || !item.end) return;
+
+          // All-day events use date-only, with an exclusive end date. Timed events
+          // may cross midnight, so add a display entry for every affected day.
+          var allDay = !!(item.start.date && item.end.date);
+          var start = allDay ? new Date(item.start.date + 'T00:00:00') : new Date(item.start.dateTime);
+          var end = allDay ? new Date(item.end.date + 'T00:00:00') : new Date(item.end.dateTime);
+          if (isNaN(start.getTime()) || isNaN(end.getTime()) || end <= start) return;
+
+          var firstDay = startOfDay(start);
+          var lastDay = startOfDay(new Date(end.getTime() - 1));
+          for (var day = new Date(firstDay); day <= lastDay; day = addDays(day, 1)){
+            var dayIndex = Math.round((startOfDay(day) - startOfDay(monday)) / 86400000);
+            if (dayIndex < 0 || dayIndex > 6) continue;
+            var isFirstDay = sameDay(day, firstDay);
+            var isLastDay = sameDay(day, lastDay);
+            list.push({
+              day: dayIndex,
+              start: allDay || !isFirstDay ? '00:00' : String(start.getHours()).padStart(2,'0') + ':' + String(start.getMinutes()).padStart(2,'0'),
+              end: allDay || !isLastDay ? '23:59' : String(end.getHours()).padStart(2,'0') + ':' + String(end.getMinutes()).padStart(2,'0'),
+              title: item.summary || '(untitled)',
+              htmlLink: item.htmlLink,
+              source: 'google',
+              allDay: allDay
+            });
+          }
         });
         googleEventsByWeek[key] = list;
         render();
@@ -1785,6 +2159,7 @@
 
   function afterSignedIn(){
     localStorage.setItem(GCAL_WAS_SIGNED_IN_KEY, '1');
+    setSignedInUI({ name: 'Google account', email: 'Calendar connected' });
     googleEventsByWeek = {};
     fetchGoogleEvents(currentMonday);
     pullStoreFromDrive();
