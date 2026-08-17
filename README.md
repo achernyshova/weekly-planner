@@ -33,7 +33,7 @@ The token popup still requires an OAuth **Web application Client ID** registered
 1. Create a new project (or pick an existing one).
 2. **APIs & Services → Library** → enable **Google Calendar API**, **Google Drive API**, and **Google Tasks API**.
 3. **APIs & Services → OAuth consent screen** → choose **External** → fill in app name + your email → under "Test users" add your own Google account (keeps the app in testing mode, so no Google review is needed for personal use).
-   - Under **Data Access → Add or Remove Scopes**, add: `.../auth/calendar.readonly`, `.../auth/tasks`, `.../auth/drive.appdata`, `.../auth/userinfo.email`, `.../auth/userinfo.profile`.
+   - Under **Data Access → Add or Remove Scopes**, add: `.../auth/calendar.events.owned`, `.../auth/tasks`, `.../auth/drive.appdata`, `.../auth/userinfo.email`, `.../auth/userinfo.profile`.
 4. **APIs & Services → Credentials → Create Credentials → OAuth client ID** → Application type: **Web application**.
 5. Under **Authorized JavaScript origins**, add:
    - `http://localhost:8000` (for local use)
