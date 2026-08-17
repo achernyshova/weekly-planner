@@ -8,5 +8,5 @@
  * API key, access token, or any other secret in this static application.
  */
 window.WEEKLY_PLANNER_CONFIG = {
-  googleClientId: ''
+  googleClientId: '310275091285-o4o9a6qlfsd6ouonf510c09dqvn3a0qp.apps.googleusercontent.com'
 };
