@@ -1,6 +1,6 @@
 # Weekly Planner
 
-A single-file weekly planner: top priorities, a weekly task list, a Google Tasks Inbox, a habit tracker, a manual "blocked time" schedule per day, and an optional Google sign-in that pulls Calendar events and syncs Google Tasks. No build step, no backend — it's one static `index.html`.
+A single-file planner: top priorities, a weekly task list, a Google Tasks Inbox, a 12-month goals view, a habit tracker, a manual "blocked time" schedule per day, and an optional Google sign-in that pulls Calendar events and syncs Google Tasks. No build step, no backend — it's one static `index.html`.
 
 ## Run locally
 
@@ -22,7 +22,7 @@ Click **Sign in with Google** in the top-right corner. Google opens its own acco
 
 - **Calendar (read-only)**: your events show up alongside your manual "blocked" time, tagged with a small **G** badge (click one to open it in Google Calendar).
 - **Google Tasks**: undated tasks appear in Inbox, dated tasks appear on their assigned day, and changes to titles, completion, dates, and deletions sync both ways. Week-only assignments stay undated in Google Tasks and are saved as private planner metadata.
-- **Planner data sync**: priorities, habits, blocked time, local tasks, and week-only Google Task assignments are saved as a private file in your own Google Drive's hidden "app data" folder.
+- **Planner data sync**: priorities, habits, blocked time, local tasks, monthly goals, and week-only Google Task assignments are saved as a private file in your own Google Drive's hidden "app data" folder.
 
 If you never sign in, everything still works exactly as before, saved only to this browser's `localStorage`. If the app isn't configured yet, or the popup is blocked or cancelled, a small message under the Sign in button explains what happened.
 
@@ -61,4 +61,4 @@ Push to `main` and it updates automatically within a minute or two.
 
 ## Data
 
-Planner data — priorities, habits, blocked time, local tasks, week assignments, and your theme — is saved in this browser's `localStorage`. Signing in also reads and writes your Google Tasks and mirrors planner-only data (except the theme) to a private file in your own Google Drive. Calendar events remain read-only. Nothing passes through a third-party server; your browser talks to Google directly.
+Planner data — priorities, habits, blocked time, local tasks, monthly goals, week assignments, and your theme — is saved in this browser's `localStorage`. Signing in also reads and writes your Google Tasks and mirrors planner-only data (except the theme) to a private file in your own Google Drive. Calendar events remain read-only. Nothing passes through a third-party server; your browser talks to Google directly.

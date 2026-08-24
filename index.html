@@ -1220,6 +1220,124 @@
     cursor:pointer;
   }
   .completed-tasks .inbox-task{ opacity:.72; }
+
+  .year-view{
+    width:100%;
+    margin:0 auto;
+  }
+  .year-panel{
+    overflow:hidden;
+    border:1px solid var(--line);
+    border-radius:calc(var(--radius-l) + 3px);
+    background:var(--surface);
+    box-shadow:var(--shadow);
+  }
+  .year-head{
+    display:flex;
+    align-items:flex-end;
+    justify-content:space-between;
+    gap:24px;
+    padding:24px 26px 21px;
+    border-bottom:1px solid var(--line);
+  }
+  .year-title{
+    margin:2px 0 5px;
+    font-family:var(--font-display);
+    font-size:29px;
+    line-height:1.1;
+  }
+  .year-description{
+    max-width:650px;
+    margin:0;
+    color:var(--ink-soft);
+    font-size:12px;
+    line-height:1.5;
+  }
+  .year-save-note{
+    display:flex;
+    align-items:center;
+    gap:7px;
+    flex:0 0 auto;
+    color:var(--ink-faint);
+    font-size:10.5px;
+    white-space:nowrap;
+  }
+  .year-save-note::before{
+    content:'';
+    width:7px;
+    height:7px;
+    border-radius:50%;
+    background:var(--ink-faint);
+  }
+  .year-save-note.connected{ color:var(--accent); }
+  .year-save-note.connected::before{ background:var(--accent); }
+  .year-grid{
+    display:grid;
+    grid-template-columns:repeat(4, minmax(0,1fr));
+  }
+  .month-card{
+    min-width:0;
+    padding:18px 20px 20px;
+    border-right:1px solid var(--line-soft);
+    border-bottom:1px solid var(--line-soft);
+  }
+  .month-card:nth-child(4n){ border-right:0; }
+  .month-card:nth-last-child(-n+4){ border-bottom:0; }
+  .month-card-head{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    gap:12px;
+    margin-bottom:10px;
+  }
+  .month-name{
+    margin:0;
+    font-family:var(--font-display);
+    font-size:20px;
+    line-height:1.2;
+  }
+  .month-progress{
+    color:var(--ink-faint);
+    font-family:var(--font-mono);
+    font-size:9.5px;
+  }
+  .month-goals{ display:flex; flex-direction:column; }
+  .month-goal{
+    display:grid;
+    grid-template-columns:auto minmax(0,1fr);
+    align-items:center;
+    gap:8px;
+    min-height:37px;
+    border-bottom:1px solid var(--line-soft);
+  }
+  .month-goal:last-child{ border-bottom:0; }
+  .month-goal-check{
+    width:16px;
+    height:16px;
+    display:grid;
+    place-items:center;
+    padding:0;
+    border:1.5px solid var(--ink-faint);
+    border-radius:5px;
+    background:transparent;
+    color:var(--accent-ink);
+    cursor:pointer;
+  }
+  .month-goal-check:disabled{ cursor:default; opacity:.42; }
+  .month-goal-check.checked{ border-color:var(--accent); background:var(--accent); }
+  .month-goal-check svg{ width:10px; height:10px; opacity:0; }
+  .month-goal-check.checked svg{ opacity:1; }
+  .month-goal-input{
+    min-width:0;
+    width:100%;
+    border:0;
+    background:transparent;
+    color:var(--ink);
+    padding:8px 0;
+    font-size:12.5px;
+  }
+  .month-goal-input::placeholder{ color:var(--ink-faint); }
+  .month-goal-input.done{ color:var(--done); text-decoration:line-through; }
   .google-task-row{ position:relative; }
   .google-task-row::before{
     content:'G';
@@ -1363,6 +1481,11 @@
   @media (max-width:1180px){
     .layout{ grid-template-columns:1fr; }
     .sidebar{ display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); }
+    .year-grid{ grid-template-columns:repeat(3, minmax(0,1fr)); }
+    .month-card:nth-child(4n){ border-right:1px solid var(--line-soft); }
+    .month-card:nth-last-child(-n+4){ border-bottom:1px solid var(--line-soft); }
+    .month-card:nth-child(3n){ border-right:0; }
+    .month-card:nth-last-child(-n+3){ border-bottom:0; }
   }
   @media (max-width:780px){
     .shell{ padding:12px 12px 38px; }
@@ -1377,6 +1500,12 @@
     .view-tabs{ align-items:flex-start; }
     .tasks-connection{ display:none; }
     .inbox-head{ padding:20px 18px 17px; }
+    .year-head{ align-items:flex-start; flex-direction:column; padding:20px 18px 17px; }
+    .year-grid{ grid-template-columns:repeat(2, minmax(0,1fr)); }
+    .month-card:nth-child(3n){ border-right:1px solid var(--line-soft); }
+    .month-card:nth-last-child(-n+3){ border-bottom:1px solid var(--line-soft); }
+    .month-card:nth-child(2n){ border-right:0; }
+    .month-card:nth-last-child(-n+2){ border-bottom:0; }
     .inbox-compose{
       grid-template-columns:1fr;
       padding:14px 18px;
@@ -1411,6 +1540,9 @@
   @media (max-width:430px){
     #themeToggle{ flex:0 0 auto; }
     .calendar-legend{ gap:10px; font-size:9.5px; }
+    .year-grid{ grid-template-columns:1fr; }
+    .month-card{ border-right:0 !important; border-bottom:1px solid var(--line-soft) !important; }
+    .month-card:last-child{ border-bottom:0 !important; }
   }
 </style>
 </head>
@@ -1426,7 +1558,7 @@
       </div>
     </div>
     <div class="week-nav">
-      <div class="nav-cluster" aria-label="Week navigation">
+      <div class="nav-cluster" id="navCluster" aria-label="Week navigation">
         <button class="nav-btn" id="prevWeek" aria-label="Previous week">&#8592;</button>
         <button class="today-btn" id="gotoToday">Today</button>
         <button class="nav-btn" id="nextWeek" aria-label="Next week">&#8594;</button>
@@ -1476,6 +1608,7 @@
     <div class="view-tab-list" role="tablist">
       <button class="view-tab active" id="plannerTab" type="button" role="tab" aria-selected="true" aria-controls="plannerView">Planner</button>
       <button class="view-tab" id="inboxTab" type="button" role="tab" aria-selected="false" aria-controls="inboxView">Inbox <span class="tab-count" id="inboxCount">0</span></button>
+      <button class="view-tab" id="yearTab" type="button" role="tab" aria-selected="false" aria-controls="yearView">Year</button>
     </div>
     <div class="tasks-connection" id="tasksConnection" role="status" aria-live="polite">
       <span class="tasks-connection-dot"></span>
@@ -1551,7 +1684,21 @@
     </div>
   </section>
 
-  <footer class="hint">Use Inbox for undated Google Tasks, assign a date to place one on a day, or move it to This Week without creating a fake deadline. Calendar events stay read-only; task changes sync back to Google Tasks.</footer>
+  <section class="year-view" id="yearView" role="tabpanel" aria-labelledby="yearTab" hidden>
+    <div class="year-panel">
+      <div class="year-head">
+        <div>
+          <p class="section-eyebrow">The big picture</p>
+          <h2 class="year-title" id="yearTitle">Year goals</h2>
+          <p class="year-description">Choose up to six meaningful goals for each month. Check them off as the year unfolds.</p>
+        </div>
+        <div class="year-save-note">Private Google Drive app data</div>
+      </div>
+      <div class="year-grid" id="yearGrid"></div>
+    </div>
+  </section>
+
+  <footer class="hint" id="appHint">Use Inbox for undated Google Tasks, assign a date to place one on a day, or move it to This Week without creating a fake deadline. Calendar events stay read-only; task changes sync back to Google Tasks.</footer>
 </div>
 
 <div class="theme-overlay" id="themeOverlay"></div>
@@ -1628,6 +1775,7 @@
   var DAY_NAMES = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
   var DAY_LETTERS = ['M','T','W','T','F','S','S'];
   var MONTH_NAMES = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  var YEAR_MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December'];
   var STORAGE_KEY = 'weekly-planner-v1';
   var openEventForm = null; // { day: 0-6, editId: string|null }
   var googleEventsByWeek = {}; // isoWeekKey -> [{day, start, end, title, htmlLink, source:'google'}]
@@ -1638,7 +1786,7 @@
   var googleTasksState = 'signed-out'; // signed-out | loading | ready | error
   var googleTasksError = '';
   var googleTaskMutationTimers = {};
-  var appView = window.location.hash === '#inbox' ? 'inbox' : 'planner';
+  var appView = window.location.hash === '#inbox' ? 'inbox' : (window.location.hash === '#year' ? 'year' : 'planner');
 
   function uid(){ return Math.random().toString(36).slice(2, 10) + Date.now().toString(36); }
 
@@ -1683,13 +1831,25 @@
     };
   }
 
+  function blankYear(){
+    var months = [];
+    for (var monthIndex = 0; monthIndex < 12; monthIndex++){
+      var goals = [];
+      for (var goalIndex = 0; goalIndex < 6; goalIndex++) goals.push({ id:uid(), text:'', done:false });
+      months.push({ goals:goals });
+    }
+    return { months:months };
+  }
+
   var store = loadAll();
   var currentMonday = getMonday(new Date());
+  var currentYear = new Date().getFullYear();
 
   function ensureStoreShape(){
     if (!store || typeof store !== 'object') store = { weeks: {} };
     if (!store.weeks) store.weeks = {};
     if (!store.googleTaskWeeks) store.googleTaskWeeks = {};
+    if (!store.years) store.years = {};
   }
   ensureStoreShape();
 
@@ -1699,6 +1859,24 @@
     var week = store.weeks[key];
     if (!week.events) week.events = []; // back-fill weeks saved before the schedule feature existed
     return week;
+  }
+
+  function yearData(year){
+    var key = String(year);
+    if (!store.years[key]) store.years[key] = blankYear();
+    var data = store.years[key];
+    if (!Array.isArray(data.months)) data.months = [];
+    for (var monthIndex = 0; monthIndex < 12; monthIndex++){
+      if (!data.months[monthIndex] || !Array.isArray(data.months[monthIndex].goals)) data.months[monthIndex] = { goals:[] };
+      var goals = data.months[monthIndex].goals;
+      while (goals.length < 6) goals.push({ id:uid(), text:'', done:false });
+      goals.forEach(function(goal){
+        if (!goal.id) goal.id = uid();
+        if (typeof goal.text !== 'string') goal.text = '';
+        if (typeof goal.done !== 'boolean') goal.done = false;
+      });
+    }
+    return data;
   }
 
   function timeToMinutes(t){
@@ -1772,16 +1950,112 @@
   function renderViewState(){
     var planner = document.getElementById('plannerView');
     var inbox = document.getElementById('inboxView');
+    var year = document.getElementById('yearView');
     var plannerTab = document.getElementById('plannerTab');
     var inboxTab = document.getElementById('inboxTab');
+    var yearTab = document.getElementById('yearTab');
     var isPlanner = appView === 'planner';
+    var isInbox = appView === 'inbox';
+    var isYear = appView === 'year';
     planner.hidden = !isPlanner;
-    inbox.hidden = isPlanner;
+    inbox.hidden = !isInbox;
+    year.hidden = !isYear;
     plannerTab.classList.toggle('active', isPlanner);
-    inboxTab.classList.toggle('active', !isPlanner);
+    inboxTab.classList.toggle('active', isInbox);
+    yearTab.classList.toggle('active', isYear);
     plannerTab.setAttribute('aria-selected', isPlanner ? 'true' : 'false');
-    inboxTab.setAttribute('aria-selected', isPlanner ? 'false' : 'true');
+    inboxTab.setAttribute('aria-selected', isInbox ? 'true' : 'false');
+    yearTab.setAttribute('aria-selected', isYear ? 'true' : 'false');
     document.getElementById('inboxCount').textContent = inboxGoogleTasks().length;
+
+    var navCluster = document.getElementById('navCluster');
+    navCluster.hidden = isInbox;
+    navCluster.setAttribute('aria-label', isYear ? 'Year navigation' : 'Week navigation');
+    document.getElementById('prevWeek').setAttribute('aria-label', isYear ? 'Previous year' : 'Previous week');
+    document.getElementById('nextWeek').setAttribute('aria-label', isYear ? 'Next year' : 'Next week');
+    document.getElementById('gotoToday').textContent = isYear ? 'This year' : 'Today';
+
+    var hint = document.getElementById('appHint');
+    hint.textContent = isYear
+      ? 'Monthly goals save in this browser immediately and sync to your private Google Drive app data when Google is connected.'
+      : 'Use Inbox for undated Google Tasks, assign a date to place one on a day, or move it to This Week without creating a fake deadline. Calendar events stay read-only; task changes sync back to Google Tasks.';
+  }
+
+  function renderYear(){
+    document.getElementById('yearTitle').textContent = currentYear + ' monthly goals';
+    var saveNote = document.querySelector('.year-save-note');
+    saveNote.textContent = googleAccessToken ? 'Private Google Drive sync on' : 'Connect Google to sync this year';
+    saveNote.classList.toggle('connected', !!googleAccessToken);
+
+    var grid = document.getElementById('yearGrid');
+    grid.innerHTML = '';
+    var data = yearData(currentYear);
+
+    data.months.forEach(function(month, monthIndex){
+      var card = el('section', 'month-card');
+      var head = el('div', 'month-card-head');
+      var name = el('h3', 'month-name');
+      name.textContent = YEAR_MONTH_NAMES[monthIndex];
+      var progress = el('span', 'month-progress');
+
+      function updateProgress(){
+        var filled = month.goals.slice(0, 6).filter(function(goal){ return goal.text.trim(); }).length;
+        var done = month.goals.slice(0, 6).filter(function(goal){ return goal.text.trim() && goal.done; }).length;
+        progress.textContent = filled ? done + '/' + filled + ' done' : '0/6 goals';
+      }
+
+      updateProgress();
+      head.appendChild(name);
+      head.appendChild(progress);
+      card.appendChild(head);
+
+      var goalsWrap = el('div', 'month-goals');
+      month.goals.slice(0, 6).forEach(function(goal, goalIndex){
+        var row = el('div', 'month-goal');
+        var check = el('button', 'month-goal-check' + (goal.done ? ' checked' : ''), {
+          type:'button',
+          'aria-label':goal.done ? 'Mark goal incomplete' : 'Mark goal complete'
+        });
+        check.innerHTML = checkSvg();
+        check.disabled = !goal.text.trim();
+
+        var input = el('input', 'month-goal-input' + (goal.done ? ' done' : ''), {
+          type:'text',
+          placeholder:'Goal ' + (goalIndex + 1),
+          'aria-label':YEAR_MONTH_NAMES[monthIndex] + ' goal ' + (goalIndex + 1)
+        });
+        input.value = goal.text;
+
+        check.addEventListener('click', function(){
+          if (!goal.text.trim()) return;
+          goal.done = !goal.done;
+          saveAll();
+          renderYear();
+        });
+        input.addEventListener('input', function(){
+          goal.text = input.value;
+          if (!goal.text.trim()) goal.done = false;
+          check.disabled = !goal.text.trim();
+          check.classList.toggle('checked', goal.done);
+          input.classList.toggle('done', goal.done);
+          saveAll();
+          updateProgress();
+        });
+        input.addEventListener('keydown', function(ev){
+          if (ev.key === 'Enter'){
+            ev.preventDefault();
+            var next = goalsWrap.querySelectorAll('.month-goal-input')[goalIndex + 1];
+            if (next) next.focus();
+          }
+        });
+
+        row.appendChild(check);
+        row.appendChild(input);
+        goalsWrap.appendChild(row);
+      });
+      card.appendChild(goalsWrap);
+      grid.appendChild(card);
+    });
   }
 
   function renderGoogleTaskRow(task, completed){
@@ -1885,7 +2159,9 @@
   }
 
   function render(){
-    document.getElementById('weekHeading').textContent = fmtHeading(currentMonday);
+    document.getElementById('weekHeading').textContent = appView === 'year'
+      ? currentYear + ' Year plan'
+      : (appView === 'inbox' ? 'Task Inbox' : fmtHeading(currentMonday));
     var data = currentWeekData();
 
     renderPriorities(data);
@@ -1894,8 +2170,9 @@
     renderWeekGrid(data);
     renderViewState();
     renderInbox();
+    renderYear();
 
-    if (googleAccessToken && !googleEventsByWeek[isoWeekKey(currentMonday)]) fetchGoogleEvents(currentMonday);
+    if (appView === 'planner' && googleAccessToken && !googleEventsByWeek[isoWeekKey(currentMonday)]) fetchGoogleEvents(currentMonday);
   }
 
   // ---------- Priorities ----------
@@ -2307,6 +2584,7 @@
   // ---------- global add handlers ----------
   document.getElementById('plannerTab').addEventListener('click', function(){ appView = 'planner'; history.replaceState(null, '', window.location.pathname + window.location.search); render(); });
   document.getElementById('inboxTab').addEventListener('click', function(){ appView = 'inbox'; history.replaceState(null, '', '#inbox'); render(); });
+  document.getElementById('yearTab').addEventListener('click', function(){ appView = 'year'; history.replaceState(null, '', '#year'); render(); });
   document.getElementById('refreshGoogleTasks').addEventListener('click', function(){
     if (googleAccessToken) fetchGoogleTasks(); else requestGoogleSignIn(true);
   });
@@ -2335,13 +2613,19 @@
   });
 
   document.getElementById('prevWeek').addEventListener('click', function(){
-    currentMonday = addDays(currentMonday, -7); render();
+    if (appView === 'year') currentYear -= 1;
+    else currentMonday = addDays(currentMonday, -7);
+    render();
   });
   document.getElementById('nextWeek').addEventListener('click', function(){
-    currentMonday = addDays(currentMonday, 7); render();
+    if (appView === 'year') currentYear += 1;
+    else currentMonday = addDays(currentMonday, 7);
+    render();
   });
   document.getElementById('gotoToday').addEventListener('click', function(){
-    currentMonday = getMonday(new Date()); render();
+    if (appView === 'year') currentYear = new Date().getFullYear();
+    else currentMonday = getMonday(new Date());
+    render();
   });
 
   // ---------- design panel ----------
@@ -2640,7 +2924,7 @@
         return readDriveFile(file.id).then(function(text){
           var remote = null;
           try{ remote = text ? JSON.parse(text) : null; }catch(e){ remote = null; }
-          if (remote && remote.weeks && Object.keys(remote.weeks).length){
+          if (remote && typeof remote === 'object' && (remote.weeks || remote.years)){
             store = remote;
             ensureStoreShape();
             saveAllLocalOnly();
