@@ -1253,6 +1253,32 @@
     font-size:12px;
     line-height:1.5;
   }
+  .year-head-actions{
+    display:flex;
+    align-items:center;
+    gap:16px;
+    flex:0 0 auto;
+  }
+  .year-picker{
+    display:flex;
+    align-items:center;
+    gap:7px;
+    color:var(--ink-soft);
+    font-size:10.5px;
+    font-weight:700;
+    white-space:nowrap;
+  }
+  .year-picker select{
+    height:34px;
+    padding:0 30px 0 10px;
+    border:1px solid var(--line);
+    border-radius:9px;
+    background:var(--surface-2);
+    color:var(--ink);
+    font-size:12px;
+    font-weight:750;
+    cursor:pointer;
+  }
   .year-save-note{
     display:flex;
     align-items:center;
@@ -1507,6 +1533,7 @@
     .tasks-connection{ display:none; }
     .inbox-head{ padding:20px 18px 17px; }
     .year-head{ align-items:flex-start; flex-direction:column; padding:20px 18px 17px; }
+    .year-head-actions{ width:100%; justify-content:space-between; }
     .year-grid{ grid-template-columns:repeat(2, minmax(0,1fr)); }
     .month-card:nth-child(3n){ border-right:1px solid var(--line-soft); }
     .month-card:nth-last-child(-n+3){ border-bottom:1px solid var(--line-soft); }
@@ -1698,7 +1725,12 @@
           <h2 class="year-title" id="yearTitle">Year goals</h2>
           <p class="year-description">Choose up to six meaningful goals for each month. Check them off as the year unfolds.</p>
         </div>
-        <div class="year-save-note">Private Google Drive app data</div>
+        <div class="year-head-actions">
+          <label class="year-picker" for="yearSelect">Plan year
+            <select id="yearSelect" aria-label="Choose planning year"></select>
+          </label>
+          <div class="year-save-note">Private Google Drive app data</div>
+        </div>
       </div>
       <div class="year-grid" id="yearGrid"></div>
     </div>
@@ -1989,6 +2021,18 @@
 
   function renderYear(){
     document.getElementById('yearTitle').textContent = currentYear + ' monthly goals';
+    var yearSelect = document.getElementById('yearSelect');
+    yearSelect.innerHTML = '';
+    var actualYear = new Date().getFullYear();
+    var firstYear = Math.min(actualYear, currentYear);
+    var lastYear = Math.max(actualYear + 5, currentYear);
+    for (var optionYear = firstYear; optionYear <= lastYear; optionYear++){
+      var option = document.createElement('option');
+      option.value = String(optionYear);
+      option.textContent = String(optionYear);
+      option.selected = optionYear === currentYear;
+      yearSelect.appendChild(option);
+    }
     var saveNote = document.querySelector('.year-save-note');
     saveNote.textContent = googleAccessToken ? 'Private Google Drive sync on' : 'Connect Google to sync this year';
     saveNote.classList.toggle('connected', !!googleAccessToken);
@@ -2591,6 +2635,10 @@
   document.getElementById('plannerTab').addEventListener('click', function(){ appView = 'planner'; history.replaceState(null, '', window.location.pathname + window.location.search); render(); });
   document.getElementById('inboxTab').addEventListener('click', function(){ appView = 'inbox'; history.replaceState(null, '', '#inbox'); render(); });
   document.getElementById('yearTab').addEventListener('click', function(){ appView = 'year'; history.replaceState(null, '', '#year'); render(); });
+  document.getElementById('yearSelect').addEventListener('change', function(ev){
+    currentYear = Number(ev.target.value) || new Date().getFullYear();
+    render();
+  });
   document.getElementById('refreshGoogleTasks').addEventListener('click', function(){
     if (googleAccessToken) fetchGoogleTasks(); else requestGoogleSignIn(true);
   });
