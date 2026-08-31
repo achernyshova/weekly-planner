@@ -1046,6 +1046,29 @@
     font-family:var(--font-mono);
     font-size:9px;
   }
+  .priorities-view{ max-width:920px; margin:0 auto; }
+  .work-priorities-panel{ overflow:hidden; border:1px solid var(--line); border-radius:calc(var(--radius-l) + 3px); background:var(--surface); box-shadow:var(--shadow); }
+  .work-priorities-head{ padding:24px 26px 20px; border-bottom:1px solid var(--line); }
+  .work-priorities-title{ margin:2px 0 5px; font-family:var(--font-display); font-size:27px; }
+  .work-priorities-description{ margin:0; color:var(--ink-soft); font-size:13px; }
+  .work-priorities-table{ padding:8px 26px 24px; }
+  .work-priorities-columns, .work-priority-row{ display:grid; grid-template-columns:48px minmax(0, 2fr) minmax(120px, 1fr) 76px 24px; gap:12px; align-items:center; }
+  .work-priorities-columns{ padding:10px 0 8px; color:var(--ink-faint); font-size:10px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; border-bottom:1px solid var(--line); }
+  .work-priority-row{ min-height:48px; border-bottom:1px solid var(--line-soft); }
+  .work-priority-row:hover .row-remove{ opacity:1; }
+  .work-priority-row.dragging{ opacity:.42; }
+  .work-priority-row.drag-over{ box-shadow:inset 0 2px 0 var(--accent); }
+  .priority-drag{ border:0; background:transparent; color:var(--ink-faint); cursor:grab; font-family:var(--font-mono); font-size:12px; padding:7px 0; }
+  .priority-drag:active{ cursor:grabbing; }
+  .work-priority-input{ width:100%; min-width:0; border:0; background:transparent; padding:9px 0; color:var(--ink); font-size:14px; }
+  .work-priority-input::placeholder{ color:var(--ink-faint); }
+  .priority-order-actions{ display:flex; gap:3px; }
+  .priority-order-btn{ width:32px; height:28px; border:1px solid var(--line-soft); border-radius:6px; background:transparent; color:var(--ink-soft); cursor:pointer; }
+  .priority-order-btn:hover:not(:disabled){ background:var(--surface-2); color:var(--ink); }
+  .priority-order-btn:disabled{ opacity:.28; cursor:default; }
+  .work-priorities-add{ display:grid; grid-template-columns:minmax(0, 2fr) minmax(120px, 1fr) auto; gap:12px; align-items:center; padding-top:14px; }
+  .work-priorities-add input{ min-width:0; height:38px; padding:0 11px; border:1px solid var(--line); border-radius:8px; background:var(--surface-2); font-size:13px; }
+  .work-priorities-add button{ height:38px; padding:0 15px; border:0; border-radius:8px; background:var(--accent); color:var(--accent-ink); font-weight:700; cursor:pointer; }
   .tasks-connection{
     display:flex;
     align-items:center;
@@ -1532,6 +1555,9 @@
     .view-tabs{ align-items:flex-start; }
     .tasks-connection{ display:none; }
     .inbox-head{ padding:20px 18px 17px; }
+    .work-priorities-head{ padding:20px 18px 17px; }
+    .work-priorities-table{ padding:8px 18px 20px; overflow-x:auto; }
+    .work-priorities-columns, .work-priority-row, .work-priorities-add{ min-width:620px; }
     .year-head{ align-items:flex-start; flex-direction:column; padding:20px 18px 17px; }
     .year-head-actions{ width:100%; justify-content:space-between; }
     .year-grid{ grid-template-columns:repeat(2, minmax(0,1fr)); }
@@ -1640,6 +1666,7 @@
   <nav class="view-tabs" aria-label="Planner views">
     <div class="view-tab-list" role="tablist">
       <button class="view-tab active" id="plannerTab" type="button" role="tab" aria-selected="true" aria-controls="plannerView">Planner</button>
+      <button class="view-tab" id="prioritiesTab" type="button" role="tab" aria-selected="false" aria-controls="prioritiesView">Work Priorities</button>
       <button class="view-tab" id="inboxTab" type="button" role="tab" aria-selected="false" aria-controls="inboxView">Inbox <span class="tab-count" id="inboxCount">0</span></button>
       <button class="view-tab" id="yearTab" type="button" role="tab" aria-selected="false" aria-controls="yearView">Year</button>
     </div>
@@ -1690,6 +1717,25 @@
       <div class="week-grid" id="weekGrid"></div>
     </section>
   </main>
+
+  <section class="priorities-view" id="prioritiesView" role="tabpanel" aria-labelledby="prioritiesTab" hidden>
+    <div class="work-priorities-panel">
+      <div class="work-priorities-head">
+        <p class="section-eyebrow">Focused work</p>
+        <h2 class="work-priorities-title">Work priorities</h2>
+        <p class="work-priorities-description">Keep the most important work at the top. Drag rows or use the arrow buttons to reorder them.</p>
+      </div>
+      <div class="work-priorities-table">
+        <div class="work-priorities-columns" aria-hidden="true"><span></span><span>Task</span><span>Project</span><span>Order</span><span></span></div>
+        <div id="workPriorityRows"></div>
+        <div class="work-priorities-add">
+          <input id="workPriorityTask" type="text" placeholder="Add a task…" aria-label="New priority task">
+          <input id="workPriorityProject" type="text" placeholder="Project" aria-label="New priority project">
+          <button id="addWorkPriority" type="button">Add priority</button>
+        </div>
+      </div>
+    </div>
+  </section>
 
   <section class="inbox-view" id="inboxView" role="tabpanel" aria-labelledby="inboxTab" hidden>
     <div class="inbox-panel">
@@ -1824,7 +1870,7 @@
   var googleTasksState = 'signed-out'; // signed-out | loading | ready | error
   var googleTasksError = '';
   var googleTaskMutationTimers = {};
-  var appView = window.location.hash === '#inbox' ? 'inbox' : (window.location.hash === '#year' ? 'year' : 'planner');
+  var appView = window.location.hash === '#inbox' ? 'inbox' : (window.location.hash === '#year' ? 'year' : (window.location.hash === '#priorities' ? 'priorities' : 'planner'));
 
   function uid(){ return Math.random().toString(36).slice(2, 10) + Date.now().toString(36); }
 
@@ -1888,6 +1934,7 @@
     if (!store.weeks) store.weeks = {};
     if (!store.googleTaskWeeks) store.googleTaskWeeks = {};
     if (!store.years) store.years = {};
+    if (!Array.isArray(store.workPriorities)) store.workPriorities = [];
   }
   ensureStoreShape();
 
@@ -1987,34 +2034,42 @@
   }
   function renderViewState(){
     var planner = document.getElementById('plannerView');
+    var priorities = document.getElementById('prioritiesView');
     var inbox = document.getElementById('inboxView');
     var year = document.getElementById('yearView');
     var plannerTab = document.getElementById('plannerTab');
+    var prioritiesTab = document.getElementById('prioritiesTab');
     var inboxTab = document.getElementById('inboxTab');
     var yearTab = document.getElementById('yearTab');
     var isPlanner = appView === 'planner';
+    var isPriorities = appView === 'priorities';
     var isInbox = appView === 'inbox';
     var isYear = appView === 'year';
     planner.hidden = !isPlanner;
+    priorities.hidden = !isPriorities;
     inbox.hidden = !isInbox;
     year.hidden = !isYear;
     plannerTab.classList.toggle('active', isPlanner);
+    prioritiesTab.classList.toggle('active', isPriorities);
     inboxTab.classList.toggle('active', isInbox);
     yearTab.classList.toggle('active', isYear);
     plannerTab.setAttribute('aria-selected', isPlanner ? 'true' : 'false');
+    prioritiesTab.setAttribute('aria-selected', isPriorities ? 'true' : 'false');
     inboxTab.setAttribute('aria-selected', isInbox ? 'true' : 'false');
     yearTab.setAttribute('aria-selected', isYear ? 'true' : 'false');
     document.getElementById('inboxCount').textContent = inboxGoogleTasks().length;
 
     var navCluster = document.getElementById('navCluster');
-    navCluster.hidden = isInbox;
+    navCluster.hidden = isInbox || isPriorities;
     navCluster.setAttribute('aria-label', isYear ? 'Year navigation' : 'Week navigation');
     document.getElementById('prevWeek').setAttribute('aria-label', isYear ? 'Previous year' : 'Previous week');
     document.getElementById('nextWeek').setAttribute('aria-label', isYear ? 'Next year' : 'Next week');
     document.getElementById('gotoToday').textContent = isYear ? 'This year' : 'Today';
 
     var hint = document.getElementById('appHint');
-    hint.textContent = isYear
+    hint.textContent = isPriorities
+      ? 'Work priorities apply across every week and save automatically. Drag a row or use its arrow buttons to change the order.'
+      : isYear
       ? 'Monthly goals save in this browser immediately and sync to your private Google Drive app data when Google is connected.'
       : 'Use Inbox for undated Google Tasks, assign a date to place one on a day, or move it to This Week without creating a fake deadline. Calendar events stay read-only; task changes sync back to Google Tasks.';
   }
@@ -2209,12 +2264,15 @@
   }
 
   function render(){
-    document.getElementById('weekHeading').textContent = appView === 'year'
+    document.getElementById('weekHeading').textContent = appView === 'priorities'
+      ? 'Work Priorities'
+      : appView === 'year'
       ? currentYear + ' Year plan'
       : (appView === 'inbox' ? 'Task Inbox' : fmtHeading(currentMonday));
     var data = currentWeekData();
 
     renderPriorities(data);
+    renderWorkPriorities();
     renderTodos(data);
     renderHabits(data);
     renderWeekGrid(data);
@@ -2223,6 +2281,40 @@
     renderYear();
 
     if (appView === 'planner' && googleAccessToken && !googleEventsByWeek[isoWeekKey(currentMonday)]) fetchGoogleEvents(currentMonday);
+  }
+
+  function moveWorkPriority(fromIndex, toIndex){
+    if (fromIndex < 0 || toIndex < 0 || toIndex >= store.workPriorities.length || fromIndex === toIndex) return;
+    var moved = store.workPriorities.splice(fromIndex, 1)[0];
+    store.workPriorities.splice(toIndex, 0, moved);
+    saveAll(); render();
+  }
+
+  function renderWorkPriorities(){
+    var wrap = document.getElementById('workPriorityRows');
+    wrap.innerHTML = '';
+    store.workPriorities.forEach(function(priority, index){
+      var row = el('div', 'work-priority-row');
+      row.draggable = true; row.dataset.id = priority.id;
+      var drag = el('button', 'priority-drag', {'type':'button', 'aria-label':'Priority ' + (index + 1) + ', drag to reorder', 'title':'Drag to reorder'}); drag.textContent = (index + 1) + '  ⠿';
+      var task = el('input', 'work-priority-input', {'aria-label':'Task ' + (index + 1), 'placeholder':'Task'}); task.value = priority.task;
+      task.addEventListener('input', function(){ priority.task = task.value; saveAll(); });
+      var project = el('input', 'work-priority-input', {'aria-label':'Project for task ' + (index + 1), 'placeholder':'Project'}); project.value = priority.project;
+      project.addEventListener('input', function(){ priority.project = project.value; saveAll(); });
+      var actions = el('div', 'priority-order-actions');
+      var up = el('button', 'priority-order-btn', {'type':'button', 'aria-label':'Move priority up'}); up.textContent = '↑'; up.disabled = index === 0;
+      var down = el('button', 'priority-order-btn', {'type':'button', 'aria-label':'Move priority down'}); down.textContent = '↓'; down.disabled = index === store.workPriorities.length - 1;
+      up.addEventListener('click', function(){ moveWorkPriority(index, index - 1); }); down.addEventListener('click', function(){ moveWorkPriority(index, index + 1); });
+      actions.appendChild(up); actions.appendChild(down);
+      var remove = el('button', 'row-remove', {'type':'button', 'aria-label':'Remove priority'}); remove.textContent = '×';
+      remove.addEventListener('click', function(){ store.workPriorities.splice(index, 1); saveAll(); render(); });
+      row.addEventListener('dragstart', function(ev){ row.classList.add('dragging'); ev.dataTransfer.setData('text/plain', priority.id); ev.dataTransfer.effectAllowed = 'move'; });
+      row.addEventListener('dragend', function(){ row.classList.remove('dragging'); document.querySelectorAll('.work-priority-row').forEach(function(item){ item.classList.remove('drag-over'); }); });
+      row.addEventListener('dragover', function(ev){ ev.preventDefault(); row.classList.add('drag-over'); ev.dataTransfer.dropEffect = 'move'; });
+      row.addEventListener('dragleave', function(){ row.classList.remove('drag-over'); });
+      row.addEventListener('drop', function(ev){ ev.preventDefault(); row.classList.remove('drag-over'); var draggedId = ev.dataTransfer.getData('text/plain'); var fromIndex = store.workPriorities.findIndex(function(item){ return item.id === draggedId; }); var toIndex = store.workPriorities.findIndex(function(item){ return item.id === priority.id; }); moveWorkPriority(fromIndex, toIndex); });
+      row.appendChild(drag); row.appendChild(task); row.appendChild(project); row.appendChild(actions); row.appendChild(remove); wrap.appendChild(row);
+    });
   }
 
   // ---------- Priorities ----------
@@ -2633,8 +2725,18 @@
 
   // ---------- global add handlers ----------
   document.getElementById('plannerTab').addEventListener('click', function(){ appView = 'planner'; history.replaceState(null, '', window.location.pathname + window.location.search); render(); });
+  document.getElementById('prioritiesTab').addEventListener('click', function(){ appView = 'priorities'; history.replaceState(null, '', '#priorities'); render(); });
   document.getElementById('inboxTab').addEventListener('click', function(){ appView = 'inbox'; history.replaceState(null, '', '#inbox'); render(); });
   document.getElementById('yearTab').addEventListener('click', function(){ appView = 'year'; history.replaceState(null, '', '#year'); render(); });
+  function addWorkPriority(){
+    var task = document.getElementById('workPriorityTask'); var project = document.getElementById('workPriorityProject');
+    if (!task.value.trim()) return;
+    store.workPriorities.push({ id:uid(), task:task.value.trim(), project:project.value.trim() });
+    task.value = ''; project.value = ''; saveAll(); render(); task.focus();
+  }
+  document.getElementById('addWorkPriority').addEventListener('click', addWorkPriority);
+  document.getElementById('workPriorityTask').addEventListener('keydown', function(ev){ if (ev.key === 'Enter') addWorkPriority(); });
+  document.getElementById('workPriorityProject').addEventListener('keydown', function(ev){ if (ev.key === 'Enter') addWorkPriority(); });
   document.getElementById('yearSelect').addEventListener('change', function(ev){
     currentYear = Number(ev.target.value) || new Date().getFullYear();
     render();

@@ -1,6 +1,6 @@
 # Weekly Planner
 
-A single-file planner: top priorities, a weekly task list, a Google Tasks Inbox, a 12-month goals view, a habit tracker, a manual "blocked time" schedule per day, and an optional Google sign-in that pulls Calendar events and syncs Google Tasks. No build step, no backend — it's one static `index.html`.
+A single-file planner: reorderable work priorities, top priorities, a weekly task list, a Google Tasks Inbox, a 12-month goals view, a habit tracker, a manual "blocked time" schedule per day, and an optional Google sign-in that pulls Calendar events and syncs Google Tasks. No build step, no backend — it's one static `index.html`.
 
 ## Run locally
 
@@ -61,4 +61,4 @@ Push to `main` and it updates automatically within a minute or two.
 
 ## Data
 
-Planner data — priorities, habits, blocked time, local tasks, monthly goals, week assignments, and your theme — is saved in this browser's `localStorage`. Signing in also reads and writes your Google Tasks and mirrors planner-only data (except the theme) to a private file in your own Google Drive. Calendar events remain read-only. Nothing passes through a third-party server; your browser talks to Google directly.
+Planner data — work priorities, weekly priorities, habits, blocked time, local tasks, monthly goals, week assignments, and your theme — is saved in this browser's `localStorage`. Signing in also reads and writes your Google Tasks and mirrors planner-only data (except the theme) to a private file in your own Google Drive. Calendar events remain read-only. Nothing passes through a third-party server; your browser talks to Google directly.
