@@ -1,0 +1,3 @@
+The working schemas have full grants for `databricks_110189_prod_exp_ae_data_rw` and `databricks_110189_prod_exp_eng_data_rw` (USE SCHEMA, SELECT, MODIFY, CREATE TABLE/FUNCTION/MATERIALIZED VIEW/MODEL/VOLUME, READ/WRITE VOLUME) plus USE SCHEMA + SELECT for `databricks_110189_prod_exp_dsr_data_ro`. The other two only have USE SCHEMA, CREATE TABLE and CREATE FUNCTION for `ae_data_rw`, and nothing for `eng_data_rw` or `dsr_data_ro`.
+
+*Ask:* could you apply the same grants as `v863550_*` to all 4 schemas for `r750203_*` and `o822097_*`? If it's easier to drop and recreate those 8 schemas the standard way, that's fine on our side — we can rebuild them with a dbt run.
