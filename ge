@@ -1,0 +1,18 @@
+Hi team,
+
+I'd like to introduce a document we put together on the Merative admissions methodology change. Merative is replacing the Advantage Suite 5.4 Admission Build with the Flexible Analytics Inpatient Admission Grouper (v11.12.0), and the way claims are grouped into admissions, and how several admission metrics are calculated, is not the same in both. Merative doesn't publish what changed between the two, so we compared their two methodology guides side by side to understand how our admission data will be affected.
+
+The result is attached: Merative_Admissions_Methodology_Parity_Comparison.docx. It includes:
+• Background on both methodologies and how each one runs
+• A step-by-step view of how claims are grouped into an admission in each version
+• A table of every calculation that differs, with legacy and new field names, page references, a plain-language explanation and the expected impact on our data
+
+Top things to watch:
+• admission_id is built differently from the legacy adm_id and cannot be compared to it – the same stay will have unrelated IDs in old and new data, and no crosswalk is documented. Anything keyed on legacy adm_id won't join. It also may not be stable between runs – join on patient + admit + discharge dates
+• LOS is now discharge − admit, not the billed Days field – averages will shift
+• Readmission gap fields use blank instead of 0 and have no 365-day cap
+• New field "drg" is the hospital's claim DRG; the grouper result is calculated_drg
+
+On the requested facility fields: Merative confirmed that the Admit Facility name and address are looked up from NPPES using the provider ID on the claim, not taken from the address on the claim itself. Claim-reported name and ZIP are already on our extract (Clm_provname, Prov_zip_cd) for Aetna and Cigna only. Also note that the Facility Corporate fields are the owning corporation's address, not where services were rendered. Let us know if the NPPES-based address works for your use case.
+
+Please take a look and flag anything that affects your models or reports. Happy to walk through it.
