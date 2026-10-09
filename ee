@@ -1,0 +1,11 @@
+morgan_health_databricks:
+  target: my_dev
+  outputs:
+    my_dev:
+      type: databricks
+      host: odessa-gold-mgh-prod-exp-us-east-1-ws.cloud.databricks.com
+      http_path: /sql/1.0/warehouses/YOUR_DEV_WAREHOUSE_ID
+      catalog: ae_preview_health_verity_exp
+      schema: v863550_ae_staged
+      auth_type: oauth
+      threads: 4
