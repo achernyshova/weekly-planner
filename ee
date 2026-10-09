@@ -9,3 +9,16 @@ morgan_health_databricks:
       schema: v863550_ae_staged
       auth_type: oauth
       threads: 4
+
+
+dbt compile --target my_dev --select MODEL_NAME --vars '{
+  input_catalog: YOUR_PROD_SOURCE_CATALOG,
+  input_schema: YOUR_PROD_SOURCE_SCHEMA,
+  catalog: ae_preview_health_verity_exp,
+  tuva_catalog: ae_preview_health_verity_exp,
+  reference_catalog: public_ref_eng_exp,
+  schema_manage_principal: YOUR_DEV_PRINCIPAL,
+  tuva_drop_schemas: false,
+  drop_temp_tables: false
+}'
+
