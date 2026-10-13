@@ -1,0 +1,11 @@
+Concerns with the CT upstream MR process
+
+No data testing before merge. CT doesn’t have a process for testing data in a dev environment, so changes get merged without anyone checking the data they produce. The code can look fine in review, but data issues only show up later in our downstream pipelines.
+MRs can be approved without us. We’re added as reviewers so we can understand upstream changes and plan what we need to update on our side. Right now CT can approve and merge without our review, so changes can go in without us knowing.
+Impact on our team. We often find out about upstream changes only after something breaks downstream. That leads to unplanned fixes, possible data quality issues, and extra time spent finding the root cause.
+
+What we’d like
+
+Make our approval required on MRs that affect the datasets we use, so they can’t be merged without us.
+Have CT test data changes in dev and share the results in the MR, such as row counts or schema changes.
+Agree on this process with CT (Ryan/Adam) and document it so both teams follow it.
