@@ -1,1 +1,3 @@
-We found March 2026 values in ItemToDate, while the corresponding ItemServiceDate and ItemFromDate are earlier. Several date ranges are exactly 90 days inclusive. Does the February cutoff apply to service/start dates rather than item-end dates? Please confirm what ItemToDate represents and whether these March values are expected
+Hi Rowana, quick question: HV confirmed a February 2026 data cutoff, but we found 36 rows with ItemToDate in March 2026.
+For the Solventum runs, should we keep the analysis windows ending in February, or also run the April 2025–March 2026 rolling 12-month window? We haven’t confirmed complete March coverage—only these records with March end dates.
+If we keep the February cutoff, how would you like us to handle those 36 rows?
