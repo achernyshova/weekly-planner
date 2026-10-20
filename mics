@@ -1,0 +1,1 @@
+We found March 2026 values in ItemToDate, while the corresponding ItemServiceDate and ItemFromDate are earlier. Several date ranges are exactly 90 days inclusive. Does the February cutoff apply to service/start dates rather than item-end dates? Please confirm what ItemToDate represents and whether these March values are expected
