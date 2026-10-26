@@ -170,3 +170,50 @@ WHERE assert_true(
         'No usable non-point population rows found for YEAR=2022. Check the year and column names.'
       ) IS NULL
 ORDER BY ZIP3;
+
+
+
+
+WITH population AS (
+  SELECT DISTINCT
+    TRIM(CAST(ZIPCODE AS STRING)) AS zip5,
+    TRIM(CAST(ZCTA AS STRING)) AS zcta5,
+    TRY_CAST(ACS_TOT_POP_WT_ZC AS DECIMAL(20, 4)) AS population
+  FROM `110189_ctg_prod_exp`.`ds_public`.`clh_achrq_2022_zipcode`
+  WHERE TRY_CAST(YEAR AS INT) = 2022
+    AND TRY_CAST(POINT_ZIP AS DOUBLE) = 0
+    AND TRY_CAST(ACS_TOT_POP_WT_ZC AS DECIMAL(20, 4)) > 0
+),
+ruca AS (
+  SELECT DISTINCT
+    TRIM(CAST(ZIPCode AS STRING)) AS zip5,
+    TRY_CAST(PrimaryRUCA AS DOUBLE) AS primary_ruca
+  FROM `110189_ctg_prod_exp`.`ds_public`.`ruca_codes_2020_zipcode`
+)
+SELECT
+  p.zcta5 AS ZCTA,
+  COUNT(DISTINCT p.zip5) AS ZIP5_COUNT,
+  COUNT(DISTINCT SUBSTRING(p.zip5, 1, 3)) AS ZIP3_COUNT,
+  COUNT(DISTINCT r.primary_ruca) AS RUCA_CODE_COUNT,
+
+  SORT_ARRAY(
+    COLLECT_SET(
+      NAMED_STRUCT(
+        'ZIP5', p.zip5,
+        'PRIMARY_RUCA', r.primary_ruca
+      )
+    )
+  ) AS ZIP5_RUCA_DETAILS,
+
+  MIN(p.population) AS MIN_POPULATION,
+  MAX(p.population) AS MAX_POPULATION
+
+FROM population p
+LEFT JOIN ruca r
+  ON p.zip5 = r.zip5
+WHERE p.zip5 RLIKE '^[0-9]{5}$'
+  AND p.zcta5 RLIKE '^[0-9]{5}$'
+GROUP BY p.zcta5
+HAVING COUNT(DISTINCT p.zip5) > 1
+ORDER BY ZIP3_COUNT DESC, RUCA_CODE_COUNT DESC, ZIP5_COUNT DESC
+LIMIT 50;
