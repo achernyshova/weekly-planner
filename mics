@@ -1,3 +1,37 @@
-Hi Rowana, quick question: HV confirmed a February 2026 data cutoff, but we found 36 rows with ItemToDate in March 2026.
-For the Solventum runs, should we keep the analysis windows ending in February, or also run the April 2025–March 2026 rolling 12-month window? We haven’t confirmed complete March coverage—only these records with March end dates.
-If we keep the February cutoff, how would you like us to handle those 36 rows?
+CREATE TABLE `110189_ctg_prod_exp`.`ds_public`.`ruca_codes_2020_zipcode`
+USING DELTA
+AS
+SELECT
+  LPAD(CAST(CAST(ZIPCode AS BIGINT) AS STRING), 5, '0') AS ZIPCode,
+  State,
+  ZIPCodeType,
+  POName,
+  PrimaryRUCA,
+  SecondaryRUCA
+FROM read_files(
+  '/Volumes/110189_ctg_prod_exp/ds_public/self_service/public_data/RUCA-codes-2020-zipcode.xlsx',
+  format => 'excel',
+  headerRows => 1,
+  dataAddress => "'RUCA 2020 ZIP Code Data'!A2:F1048576",
+  schemaEvolutionMode => 'none'
+)
+WHERE ZIPCode IS NOT NULL;
+
+
+
+CREATE TABLE `110189_ctg_prod_exp`.`ds_public`.`clh_achrq_2022_zipcode`
+USING DELTA
+AS
+SELECT
+  LPAD(CAST(CAST(STATEFIPS AS BIGINT) AS STRING), 2, '0') AS STATEFIPS,
+  LPAD(CAST(CAST(ZIPCODE AS BIGINT) AS STRING), 5, '0') AS ZIPCODE,
+  LPAD(CAST(CAST(ZCTA AS BIGINT) AS STRING), 5, '0') AS ZCTA,
+  * EXCEPT (STATEFIPS, ZIPCODE, ZCTA)
+FROM read_files(
+  '/Volumes/110189_ctg_prod_exp/ds_public/self_service/public_data/clh_achrq_2022_zipcode.xlsx',
+  format => 'excel',
+  headerRows => 1,
+  dataAddress => 'Data',
+  schemaEvolutionMode => 'none'
+)
+WHERE ZIPCODE IS NOT NULL;
