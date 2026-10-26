@@ -1,37 +1,172 @@
-CREATE TABLE `110189_ctg_prod_exp`.`ds_public`.`ruca_codes_2020_zipcode`
-USING DELTA
-AS
-SELECT
-  LPAD(CAST(CAST(ZIPCode AS BIGINT) AS STRING), 5, '0') AS ZIPCode,
-  State,
-  ZIPCodeType,
-  POName,
-  PrimaryRUCA,
-  SecondaryRUCA
-FROM read_files(
-  '/Volumes/110189_ctg_prod_exp/ds_public/self_service/public_data/RUCA-codes-2020-zipcode.xlsx',
-  format => 'excel',
-  headerRows => 1,
-  dataAddress => "'RUCA 2020 ZIP Code Data'!A2:F1048576",
-  schemaEvolutionMode => 'none'
+-- Databricks notebook source
+-- RUCA 2020 ZIP5 -> ZIP3, using AHRQ/CLH 2022 population weights.
+-- This query has NOT been run against your Databricks tables.
+-- Paste into a SQL notebook cell, or import this .sql file as a notebook.
+-- Returns ZIP3 plus three metrics; does not create/replace a permanent table.
+--
+-- Assumptions:
+--   Population column is ACS_TOT_POP_WT (change if your actual column differs).
+--   YEAR = 2022; POINT_ZIP = 0 identifies non-point ZIPs.
+--   ZIP columns already contain five-character strings, as in the import query.
+--   "Majority" means the population-weighted mode of PRIMARY codes 1-10,
+--   following the stakeholder email, NOT the winning two-category tier.
+--
+-- Important geography limitation:
+--   CLH ACS values originate at ZCTA geography and are attached to ZIP records.
+--   Filtering point ZIPs does not guarantee independent population weights.
+--   This query stops if positive-population non-point ZIPs share a ZCTA.
+--   Even if this check passes, ZIP vs. ZCTA boundary differences remain;
+--   these are ZCTA-based population proxies, not exact USPS ZIP populations.
+--   Do not remove the checks or arbitrarily split/deduplicate shared populations.
+--
+-- Denominator: matched, non-point ZIP5s with positive population and valid
+-- PRIMARY RUCA codes 1-10. Missing weights/codes are excluded, not imputed.
+-- Exact winning-code ties and ZIP3s with no eligible population return NULL.
+-- Percentages are on a 0-100 scale, rounded to two decimals.
+--
+-- References:
+-- https://www.ahrq.gov/sites/default/files/wysiwyg/data/clh/CLH-Data-Sources-Documentation-2025.pdf
+-- https://docs.databricks.com/aws/en/sql/language-manual/functions/assert_true
+
+WITH
+ruca_input AS (
+  SELECT DISTINCT
+    TRIM(CAST(ZIPCode AS STRING)) AS zip5,
+    TRY_CAST(PrimaryRUCA AS DOUBLE) AS primary_ruca
+  FROM `110189_ctg_prod_exp`.`ds_public`.`ruca_codes_2020_zipcode`
+),
+population_input AS (
+  SELECT DISTINCT
+    TRIM(CAST(ZIPCODE AS STRING)) AS zip5,
+    TRIM(CAST(ZCTA AS STRING)) AS zcta5,
+    TRY_CAST(POINT_ZIP AS DOUBLE) AS point_zip,
+    TRY_CAST(ACS_TOT_POP_WT AS DECIMAL(20, 4)) AS population
+  FROM `110189_ctg_prod_exp`.`ds_public`.`clh_achrq_2022_zipcode`
+  WHERE TRY_CAST(YEAR AS INT) = 2022
+),
+ruca AS (
+  SELECT zip5, CAST(primary_ruca AS INT) AS ruca_code
+  FROM ruca_input
+  WHERE zip5 RLIKE '^[0-9]{5}$'
+    AND primary_ruca IN (1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
+),
+population AS (
+  SELECT zip5, zcta5, population
+  FROM population_input
+  WHERE zip5 RLIKE '^[0-9]{5}$'
+    AND point_zip = 0
+    AND population > 0
+),
+ruca_conflicts AS (
+  SELECT zip5
+  FROM ruca_input
+  WHERE zip5 RLIKE '^[0-9]{5}$'
+  GROUP BY zip5
+  HAVING COUNT(*) > 1
+),
+population_conflicts AS (
+  SELECT zip5
+  FROM population_input
+  WHERE zip5 RLIKE '^[0-9]{5}$'
+  GROUP BY zip5
+  HAVING COUNT(*) > 1
+),
+shared_zctas AS (
+  SELECT zcta5
+  FROM population
+  GROUP BY zcta5
+  HAVING COUNT(DISTINCT zip5) > 1
+),
+checks AS (
+  SELECT
+    (SELECT COUNT(*) FROM ruca_conflicts) AS ruca_conflict_count,
+    (SELECT COUNT(*) FROM population_conflicts) AS population_conflict_count,
+    (SELECT COUNT(*) FROM shared_zctas) AS shared_zcta_count,
+    (SELECT COUNT(*) FROM population
+     WHERE zcta5 IS NULL OR NOT (zcta5 RLIKE '^[0-9]{5}$')) AS invalid_zcta_count,
+    (SELECT COUNT(*) FROM population_input
+     WHERE point_zip IS NULL OR point_zip NOT IN (0, 1)) AS unknown_point_flag_count,
+    (SELECT COUNT(*) FROM population) AS population_row_count
+),
+zip3_universe AS (
+  SELECT DISTINCT SUBSTRING(zip5, 1, 3) AS zip3
+  FROM ruca_input
+  WHERE zip5 RLIKE '^[0-9]{5}$'
+),
+joined AS (
+  SELECT
+    SUBSTRING(r.zip5, 1, 3) AS zip3,
+    r.ruca_code,
+    p.population
+  FROM ruca r
+  INNER JOIN population p ON r.zip5 = p.zip5
+),
+population_by_code AS (
+  SELECT zip3, ruca_code, SUM(population) AS code_population
+  FROM joined
+  GROUP BY zip3, ruca_code
+),
+population_by_zip3 AS (
+  SELECT
+    zip3,
+    SUM(code_population) AS total_population,
+    SUM(CASE WHEN ruca_code BETWEEN 1 AND 3
+             THEN code_population ELSE 0 END) AS metro_population,
+    SUM(CASE WHEN ruca_code BETWEEN 4 AND 10
+             THEN code_population ELSE 0 END) AS rural_population
+  FROM population_by_code
+  GROUP BY zip3
+),
+ranked_codes AS (
+  SELECT
+    zip3,
+    ruca_code,
+    code_population,
+    MAX(code_population) OVER (PARTITION BY zip3) AS largest_code_population
+  FROM population_by_code
+),
+majority_code AS (
+  SELECT
+    zip3,
+    CASE WHEN COUNT(*) = 1 THEN MAX(ruca_code)
+         ELSE CAST(NULL AS INT) END AS ruca_majority_code
+  FROM ranked_codes
+  WHERE code_population = largest_code_population
+  GROUP BY zip3
 )
-WHERE ZIPCode IS NOT NULL;
-
-
-
-CREATE TABLE `110189_ctg_prod_exp`.`ds_public`.`clh_achrq_2022_zipcode`
-USING DELTA
-AS
 SELECT
-  LPAD(CAST(CAST(STATEFIPS AS BIGINT) AS STRING), 2, '0') AS STATEFIPS,
-  LPAD(CAST(CAST(ZIPCODE AS BIGINT) AS STRING), 5, '0') AS ZIPCODE,
-  LPAD(CAST(CAST(ZCTA AS BIGINT) AS STRING), 5, '0') AS ZCTA,
-  * EXCEPT (STATEFIPS, ZIPCODE, ZCTA)
-FROM read_files(
-  '/Volumes/110189_ctg_prod_exp/ds_public/self_service/public_data/clh_achrq_2022_zipcode.xlsx',
-  format => 'excel',
-  headerRows => 1,
-  dataAddress => 'Data',
-  schemaEvolutionMode => 'none'
-)
-WHERE ZIPCODE IS NOT NULL;
+  u.zip3 AS ZIP3,
+  m.ruca_majority_code AS RUCA_MAJORITY_CODE,
+  ROUND(100.0 * t.metro_population / NULLIF(t.total_population, 0), 2)
+    AS PCT_METROPOLITAN,
+  ROUND(100.0 * t.rural_population / NULLIF(t.total_population, 0), 2)
+    AS PCT_RURAL
+FROM zip3_universe u
+LEFT JOIN population_by_zip3 t ON u.zip3 = t.zip3
+LEFT JOIN majority_code m ON u.zip3 = m.zip3
+CROSS JOIN checks c
+WHERE assert_true(
+        c.ruca_conflict_count = 0,
+        'RUCA has conflicting records for a ZIP5. Resolve these before joining.'
+      ) IS NULL
+  AND assert_true(
+        c.population_conflict_count = 0,
+        'AHRQ 2022 has conflicting records for a ZIP5. Resolve these before joining.'
+      ) IS NULL
+  AND assert_true(
+        c.shared_zcta_count = 0,
+        'Multiple non-point ZIP5s share ZCTA population. An allocation/crosswalk rule is required; raw summation would double-count population.'
+      ) IS NULL
+  AND assert_true(
+        c.invalid_zcta_count = 0,
+        'Some eligible population rows have missing/invalid ZCTA identifiers. Verify their population geography before aggregation.'
+      ) IS NULL
+  AND assert_true(
+        c.unknown_point_flag_count = 0,
+        'POINT_ZIP has missing or unexpected values. Confirm point-ZIP exclusions before aggregation.'
+      ) IS NULL
+  AND assert_true(
+        c.population_row_count > 0,
+        'No usable non-point population rows found for YEAR=2022. Check the year and column names.'
+      ) IS NULL
+ORDER BY ZIP3;
