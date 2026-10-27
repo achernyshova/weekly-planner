@@ -1,52 +1,127 @@
--- RUCA 2020 classification using CLH 2022 population weights.
--- Assumes one row per ZIP5 in RUCA and per ZIP5/year in CLH,
--- numeric population/RUCA fields, and five-character ZIP strings.
--- Shared ZCTA weights are used as supplied, so results are weighted ZIP
--- estimates, not guaranteed shares of unique residents.
+-- Counts each eligible ZCTA estimate once, without arbitrary ZIP assignment.
+-- This is a ZCTA-based proxy, NOT a true population allocation to USPS ZIPs.
+-- Assumes unique source ZIP5 keys, numeric fields, and five-character ZIPs.
+-- Use ruca_zcta_mapping_conflicts.sql to see why a ZIP3 is unresolved.
+-- A ZIP3 touching ANY conflicting ZCTA receives NULL metrics: the query
+-- does not calculate misleading percentages from its resolved subset only.
+-- NULL also means no eligible population or, for majority code only, a tie.
+-- No source table or permanent result table is modified.
 
-WITH zip3s AS (
-  SELECT DISTINCT SUBSTRING(ZIPCode, 1, 3) AS zip3
-  FROM `110189_ctg_prod_exp`.`ds_public`.`ruca_codes_2020_zipcode`
-  WHERE ZIPCode RLIKE '^[0-9]{5}$'
-),
-population_by_code AS (
-  SELECT
-    SUBSTRING(r.ZIPCode, 1, 3) AS zip3,
-    CAST(r.PrimaryRUCA AS INT) AS ruca_code,
-    SUM(p.ACS_TOT_POP_WT_ZC) AS code_population
-  FROM `110189_ctg_prod_exp`.`ds_public`.`ruca_codes_2020_zipcode` r
-  JOIN `110189_ctg_prod_exp`.`ds_public`.`clh_achrq_2022_zipcode` p
-    ON r.ZIPCode = p.ZIPCODE
+WITH base AS (
+  SELECT DISTINCT
+    p.ZIPCODE AS zip5,
+    SUBSTRING(p.ZIPCODE, 1, 3) AS zip3,
+    p.ZCTA AS zcta,
+    r.PrimaryRUCA AS ruca_code,
+    p.ACS_TOT_POP_WT_ZC AS population
+  FROM `110189_ctg_prod_exp`.`ds_public`.`clh_achrq_2022_zipcode` p
+  LEFT JOIN `110189_ctg_prod_exp`.`ds_public`.`ruca_codes_2020_zipcode` r
+    ON p.ZIPCODE = r.ZIPCode
   WHERE p.YEAR = 2022
     AND p.POINT_ZIP = 0
     AND p.ACS_TOT_POP_WT_ZC > 0
-    AND r.PrimaryRUCA IN (1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
-    AND r.ZIPCode RLIKE '^[0-9]{5}$'
-  GROUP BY SUBSTRING(r.ZIPCode, 1, 3), CAST(r.PrimaryRUCA AS INT)
+    AND p.ZIPCODE RLIKE '^[0-9]{5}$'
+),
+zcta_mapping AS (
+  SELECT
+    zcta,
+    MIN(zip3) AS zip3,
+    MIN(ruca_code) AS ruca_code,
+    MIN(population) AS population,
+    CASE WHEN zcta RLIKE '^[0-9]{5}$'
+          AND COUNT(DISTINCT zip3) = 1
+          AND COUNT(DISTINCT ruca_code) = 1
+          AND COUNT(DISTINCT population) = 1
+          AND COUNT_IF(ruca_code IN (1,2,3,4,5,6,7,8,9,10)) = COUNT(*)
+         THEN 1 ELSE 0 END AS resolved
+  FROM base
+  GROUP BY zcta
+),
+unresolved_zip3s AS (
+  SELECT DISTINCT b.zip3
+  FROM base b
+  JOIN zcta_mapping z ON b.zcta <=> z.zcta
+  WHERE z.resolved = 0
+),
+population_by_code AS (
+  SELECT zip3, CAST(ruca_code AS INT) AS ruca_code,
+         SUM(population) AS code_population
+  FROM zcta_mapping
+  WHERE resolved = 1
+  GROUP BY zip3, CAST(ruca_code AS INT)
 ),
 ranked AS (
-  SELECT *,
-    MAX(code_population) OVER (PARTITION BY zip3) AS largest_population
+  SELECT *, MAX(code_population) OVER (PARTITION BY zip3) AS largest_population
   FROM population_by_code
+),
+zip3s AS (
+  SELECT DISTINCT SUBSTRING(ZIPCode, 1, 3) AS zip3
+  FROM `110189_ctg_prod_exp`.`ds_public`.`ruca_codes_2020_zipcode`
+  WHERE ZIPCode RLIKE '^[0-9]{5}$'
 )
 SELECT
   z.zip3 AS ZIP3,
-  CASE
-    WHEN COUNT_IF(r.code_population = r.largest_population) = 1
-    THEN MAX(CASE WHEN r.code_population = r.largest_population
-                  THEN r.ruca_code END)
+  CASE WHEN u.zip3 IS NULL
+         AND COUNT_IF(r.code_population = r.largest_population) = 1
+       THEN MAX(CASE WHEN r.code_population = r.largest_population
+                     THEN r.ruca_code END)
   END AS RUCA_MAJORITY_CODE,
-  ROUND(
-    100.0 * SUM(CASE WHEN r.ruca_code BETWEEN 1 AND 3
-                    THEN r.code_population ELSE 0 END)
-    / NULLIF(SUM(r.code_population), 0), 2
-  ) AS PCT_METROPOLITAN,
-  ROUND(
-    100.0 * SUM(CASE WHEN r.ruca_code BETWEEN 4 AND 10
-                    THEN r.code_population ELSE 0 END)
-    / NULLIF(SUM(r.code_population), 0), 2
-  ) AS PCT_RURAL
+  CASE WHEN u.zip3 IS NULL THEN
+    ROUND(100.0 * SUM(CASE WHEN r.ruca_code BETWEEN 1 AND 3
+                          THEN r.code_population ELSE 0 END)
+          / NULLIF(SUM(r.code_population), 0), 2)
+  END AS PCT_METROPOLITAN,
+  CASE WHEN u.zip3 IS NULL THEN
+    ROUND(100.0 * SUM(CASE WHEN r.ruca_code BETWEEN 4 AND 10
+                          THEN r.code_population ELSE 0 END)
+          / NULLIF(SUM(r.code_population), 0), 2)
+  END AS PCT_RURAL
 FROM zip3s z
 LEFT JOIN ranked r ON z.zip3 = r.zip3
-GROUP BY z.zip3
+LEFT JOIN unresolved_zip3s u ON z.zip3 = u.zip3
+GROUP BY z.zip3, u.zip3
 ORDER BY z.zip3;
+
+
+
+-- Companion QA for ruca_zip3_zcta_once.sql.
+-- Lists mappings requiring a population crosswalk or an agreed proxy rule.
+WITH base AS (
+  SELECT DISTINCT
+    p.ZIPCODE AS zip5,
+    SUBSTRING(p.ZIPCODE, 1, 3) AS zip3,
+    p.ZCTA AS zcta,
+    r.PrimaryRUCA AS ruca_code,
+    p.ACS_TOT_POP_WT_ZC AS population
+  FROM `110189_ctg_prod_exp`.`ds_public`.`clh_achrq_2022_zipcode` p
+  LEFT JOIN `110189_ctg_prod_exp`.`ds_public`.`ruca_codes_2020_zipcode` r
+    ON p.ZIPCODE = r.ZIPCode
+  WHERE p.YEAR = 2022
+    AND p.POINT_ZIP = 0
+    AND p.ACS_TOT_POP_WT_ZC > 0
+    AND p.ZIPCODE RLIKE '^[0-9]{5}$'
+)
+SELECT
+  zcta AS ZCTA,
+  SORT_ARRAY(COLLECT_SET(zip3)) AS AFFECTED_ZIP3S,
+  COUNT(DISTINCT zip3) AS ZIP3_COUNT,
+  COUNT(DISTINCT ruca_code) AS RUCA_CODE_COUNT,
+  COUNT(DISTINCT population) AS POPULATION_VALUE_COUNT,
+  COUNT_IF(ruca_code IS NULL OR ruca_code NOT IN (1,2,3,4,5,6,7,8,9,10))
+    AS INVALID_OR_MISSING_RUCA_ROWS,
+  SORT_ARRAY(COLLECT_SET(NAMED_STRUCT(
+    'ZIP5', zip5, 'RUCA_CODE', ruca_code, 'POPULATION', population
+  ))) AS ZIP5_DETAILS
+FROM base
+GROUP BY zcta
+HAVING CASE WHEN zcta RLIKE '^[0-9]{5}$'
+             AND COUNT(DISTINCT zip3) = 1
+             AND COUNT(DISTINCT ruca_code) = 1
+             AND COUNT(DISTINCT population) = 1
+             AND COUNT_IF(ruca_code IN (1,2,3,4,5,6,7,8,9,10)) = COUNT(*)
+            THEN 1 ELSE 0 END = 0
+ORDER BY ZCTA;
+
+
+
+
