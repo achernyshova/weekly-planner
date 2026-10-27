@@ -1,37 +1,69 @@
--- ZCTA-prefix approximation of ZIP3 RUCA, using CLH 2022 population.
--- EXPLICIT RULE: keep only CLH rows where ZIPCODE = ZCTA, then join the
--- RUCA classification for that same five-digit identifier.
--- This counts each represented ZCTA once under its own three-digit prefix.
--- It does NOT allocate residents across USPS ZIP boundaries.
--- ZCTAs without a matching eligible ZIP/RUCA record are not represented.
--- Assumes one source record per ZIP5/year and numeric metric columns.
--- No permanent table is created, replaced, or modified.
+-- ZCTA-prefix approximation using RUCA 2020 and CLH 2022 population.
+-- Count each represented ZCTA once; this is NOT exact USPS ZIP3 allocation.
+-- Prefer an eligible ZIPCODE=ZCTA record. If none exists, use a fallback
+-- only when its population/RUCA values agree and its ZIP3 is the ZCTA prefix.
+-- Assumes unique ZIP5/year source records, numeric fields, and string ZIPs.
+-- Ambiguous fallbacks are excluded; review ruca_zcta_fallback_audit.sql.
+-- No permanent table is created or modified.
 
-WITH zip3s AS (
-  SELECT DISTINCT SUBSTRING(ZIPCode, 1, 3) AS zip3
-  FROM `110189_ctg_prod_exp`.`ds_public`.`ruca_codes_2020_zipcode`
-  WHERE ZIPCode RLIKE '^[0-9]{5}$'
+WITH eligible AS (
+  SELECT
+    p.ZIPCODE AS zip5,
+    p.ZCTA AS zcta,
+    r.PrimaryRUCA AS ruca_code,
+    p.ACS_TOT_POP_WT_ZC AS population
+  FROM `110189_ctg_prod_exp`.`ds_public`.`clh_achrq_2022_zipcode` p
+  LEFT JOIN `110189_ctg_prod_exp`.`ds_public`.`ruca_codes_2020_zipcode` r
+    ON p.ZIPCODE = r.ZIPCode
+  WHERE p.YEAR = 2022
+    AND p.POINT_ZIP = 0
+    AND p.ACS_TOT_POP_WT_ZC > 0
+    AND p.ZIPCODE RLIKE '^[0-9]{5}$'
+    AND p.ZCTA RLIKE '^[0-9]{5}$'
+),
+preferred AS (
+  SELECT zcta, CAST(ruca_code AS INT) AS ruca_code, population
+  FROM eligible
+  WHERE zip5 = zcta
+    AND ruca_code IN (1,2,3,4,5,6,7,8,9,10)
+),
+fallback AS (
+  SELECT
+    e.zcta,
+    CAST(MIN(e.ruca_code) AS INT) AS ruca_code,
+    MIN(e.population) AS population
+  FROM eligible e
+  WHERE NOT EXISTS (
+    SELECT 1 FROM preferred p WHERE p.zcta = e.zcta
+  )
+  GROUP BY e.zcta
+  HAVING COUNT(DISTINCT e.population) = 1
+    AND COUNT(DISTINCT e.ruca_code) = 1
+    AND COUNT_IF(e.ruca_code IN (1,2,3,4,5,6,7,8,9,10)) = COUNT(*)
+    AND COUNT_IF(SUBSTRING(e.zip5,1,3) = SUBSTRING(e.zcta,1,3)) = COUNT(*)
+),
+population_by_zcta AS (
+  SELECT * FROM preferred
+  UNION ALL
+  SELECT * FROM fallback
 ),
 population_by_code AS (
   SELECT
-    SUBSTRING(p.ZCTA, 1, 3) AS zip3,
-    CAST(r.PrimaryRUCA AS INT) AS ruca_code,
-    SUM(p.ACS_TOT_POP_WT_ZC) AS code_population
-  FROM `110189_ctg_prod_exp`.`ds_public`.`clh_achrq_2022_zipcode` p
-  JOIN `110189_ctg_prod_exp`.`ds_public`.`ruca_codes_2020_zipcode` r
-    ON r.ZIPCode = p.ZCTA
-  WHERE p.YEAR = 2022
-    AND p.ZIPCODE = p.ZCTA
-    AND p.POINT_ZIP = 0
-    AND p.ACS_TOT_POP_WT_ZC > 0
-    AND p.ZCTA RLIKE '^[0-9]{5}$'
-    AND r.PrimaryRUCA IN (1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
-  GROUP BY SUBSTRING(p.ZCTA, 1, 3), CAST(r.PrimaryRUCA AS INT)
+    SUBSTRING(zcta,1,3) AS zip3,
+    ruca_code,
+    SUM(population) AS code_population
+  FROM population_by_zcta
+  GROUP BY SUBSTRING(zcta,1,3), ruca_code
 ),
 ranked AS (
   SELECT *,
     MAX(code_population) OVER (PARTITION BY zip3) AS largest_population
   FROM population_by_code
+),
+zip3s AS (
+  SELECT DISTINCT SUBSTRING(ZIPCode,1,3) AS zip3
+  FROM `110189_ctg_prod_exp`.`ds_public`.`ruca_codes_2020_zipcode`
+  WHERE ZIPCode RLIKE '^[0-9]{5}$'
 )
 SELECT
   z.zip3 AS ZIP3,
@@ -43,12 +75,12 @@ SELECT
   ROUND(
     100.0 * SUM(CASE WHEN r.ruca_code BETWEEN 1 AND 3
                     THEN r.code_population ELSE 0 END)
-    / NULLIF(SUM(r.code_population), 0), 2
+    / NULLIF(SUM(r.code_population),0), 2
   ) AS PCT_METROPOLITAN,
   ROUND(
     100.0 * SUM(CASE WHEN r.ruca_code BETWEEN 4 AND 10
                     THEN r.code_population ELSE 0 END)
-    / NULLIF(SUM(r.code_population), 0), 2
+    / NULLIF(SUM(r.code_population),0), 2
   ) AS PCT_RURAL
 FROM zip3s z
 LEFT JOIN ranked r ON z.zip3 = r.zip3
