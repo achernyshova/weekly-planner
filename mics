@@ -1,89 +1,52 @@
--- Databricks notebook source
--- Run this separately to inspect input issues before publishing the RUCA mart.
--- Same assumptions/source columns as ruca_zip5_to_zip3.sql.
--- Shared ZCTAs are a non-blocking warning in the UPDATED aggregation query.
--- They indicate repeated ZCTA-derived weights, not unique-resident allocation.
--- No permanent tables are created or changed.
+-- RUCA 2020 classification using CLH 2022 population weights.
+-- Assumes one row per ZIP5 in RUCA and per ZIP5/year in CLH,
+-- numeric population/RUCA fields, and five-character ZIP strings.
+-- Shared ZCTA weights are used as supplied, so results are weighted ZIP
+-- estimates, not guaranteed shares of unique residents.
 
-WITH
-ruca AS (
-  SELECT DISTINCT
-    TRIM(CAST(ZIPCode AS STRING)) AS zip5,
-    TRY_CAST(PrimaryRUCA AS DOUBLE) AS ruca_code
+WITH zip3s AS (
+  SELECT DISTINCT SUBSTRING(ZIPCode, 1, 3) AS zip3
   FROM `110189_ctg_prod_exp`.`ds_public`.`ruca_codes_2020_zipcode`
+  WHERE ZIPCode RLIKE '^[0-9]{5}$'
 ),
-population AS (
-  SELECT DISTINCT
-    TRIM(CAST(ZIPCODE AS STRING)) AS zip5,
-    TRIM(CAST(ZCTA AS STRING)) AS zcta5,
-    TRY_CAST(POINT_ZIP AS DOUBLE) AS point_zip,
-    TRY_CAST(ACS_TOT_POP_WT_ZC AS DECIMAL(20, 4)) AS population
-  FROM `110189_ctg_prod_exp`.`ds_public`.`clh_achrq_2022_zipcode`
-  WHERE TRY_CAST(YEAR AS INT) = 2022
+population_by_code AS (
+  SELECT
+    SUBSTRING(r.ZIPCode, 1, 3) AS zip3,
+    CAST(r.PrimaryRUCA AS INT) AS ruca_code,
+    SUM(p.ACS_TOT_POP_WT_ZC) AS code_population
+  FROM `110189_ctg_prod_exp`.`ds_public`.`ruca_codes_2020_zipcode` r
+  JOIN `110189_ctg_prod_exp`.`ds_public`.`clh_achrq_2022_zipcode` p
+    ON r.ZIPCode = p.ZIPCODE
+  WHERE p.YEAR = 2022
+    AND p.POINT_ZIP = 0
+    AND p.ACS_TOT_POP_WT_ZC > 0
+    AND r.PrimaryRUCA IN (1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
+    AND r.ZIPCode RLIKE '^[0-9]{5}$'
+  GROUP BY SUBSTRING(r.ZIPCode, 1, 3), CAST(r.PrimaryRUCA AS INT)
 ),
-ruca_conflicts AS (
-  SELECT zip5 FROM ruca
-  WHERE zip5 RLIKE '^[0-9]{5}$'
-  GROUP BY zip5 HAVING COUNT(*) > 1
-),
-population_conflicts AS (
-  SELECT zip5 FROM population
-  WHERE zip5 RLIKE '^[0-9]{5}$'
-  GROUP BY zip5 HAVING COUNT(*) > 1
-),
-shared_zctas AS (
-  SELECT zcta5 FROM population
-  WHERE zip5 RLIKE '^[0-9]{5}$'
-    AND point_zip = 0 AND population > 0
-  GROUP BY zcta5 HAVING COUNT(DISTINCT zip5) > 1
+ranked AS (
+  SELECT *,
+    MAX(code_population) OVER (PARTITION BY zip3) AS largest_population
+  FROM population_by_code
 )
-SELECT 'ruca_conflicting_zip5_keys' AS issue, COUNT(*) AS affected_count
-FROM ruca_conflicts
-UNION ALL
-SELECT 'population_conflicting_zip5_keys', COUNT(*) FROM population_conflicts
-UNION ALL
-SELECT 'shared_nonpoint_positive_population_zctas', COUNT(*) FROM shared_zctas
-UNION ALL
-SELECT 'invalid_ruca_zip5_rows', COUNT(*) FROM ruca
-WHERE zip5 IS NULL OR NOT (zip5 RLIKE '^[0-9]{5}$')
-UNION ALL
-SELECT 'invalid_or_missing_primary_ruca_rows', COUNT(*) FROM ruca
-WHERE ruca_code IS NULL OR ruca_code NOT IN (1,2,3,4,5,6,7,8,9,10)
-UNION ALL
-SELECT 'unknown_point_zip_flag_rows', COUNT(*) FROM population
-WHERE point_zip IS NULL OR point_zip NOT IN (0,1)
-UNION ALL
-SELECT 'nonpoint_missing_or_nonpositive_population_rows', COUNT(*) FROM population
-WHERE point_zip = 0 AND (population IS NULL OR population <= 0)
-UNION ALL
-SELECT 'ruca_zip5_without_2022_population_record', COUNT(*) FROM ruca r
-WHERE r.zip5 RLIKE '^[0-9]{5}$'
-  AND NOT EXISTS (SELECT 1 FROM population p WHERE p.zip5 = r.zip5)
-UNION ALL
-SELECT 'positive_population_nonpoint_zip5_without_valid_ruca', COUNT(*) FROM population p
-WHERE p.zip5 RLIKE '^[0-9]{5}$' AND p.point_zip = 0 AND p.population > 0
-  AND NOT EXISTS (
-    SELECT 1 FROM ruca r WHERE r.zip5 = p.zip5
-      AND r.ruca_code IN (1,2,3,4,5,6,7,8,9,10)
-  )
-ORDER BY issue;
-
--- COMMAND ----------
--- Review shared ZCTA mappings and document the repeated-population limitation.
--- The main query retains these ZIP5 weights as supplied; do not interpret
--- the resulting shares as guaranteed shares of unique residents.
 SELECT
-  TRIM(CAST(ZCTA AS STRING)) AS ZCTA,
-  COUNT(DISTINCT TRIM(CAST(ZIPCODE AS STRING))) AS NONPOINT_ZIP5_COUNT,
-  SORT_ARRAY(COLLECT_SET(TRIM(CAST(ZIPCODE AS STRING)))) AS ZIP5_LIST,
-  MIN(TRY_CAST(ACS_TOT_POP_WT_ZC AS DECIMAL(20, 4))) AS MIN_POPULATION,
-  MAX(TRY_CAST(ACS_TOT_POP_WT_ZC AS DECIMAL(20, 4))) AS MAX_POPULATION
-FROM `110189_ctg_prod_exp`.`ds_public`.`clh_achrq_2022_zipcode`
-WHERE TRY_CAST(YEAR AS INT) = 2022
-  AND TRY_CAST(POINT_ZIP AS DOUBLE) = 0
-  AND TRY_CAST(ACS_TOT_POP_WT_ZC AS DECIMAL(20, 4)) > 0
-  AND TRIM(CAST(ZIPCODE AS STRING)) RLIKE '^[0-9]{5}$'
-GROUP BY TRIM(CAST(ZCTA AS STRING))
-HAVING COUNT(DISTINCT TRIM(CAST(ZIPCODE AS STRING))) > 1
-ORDER BY NONPOINT_ZIP5_COUNT DESC, ZCTA
-LIMIT 50;
+  z.zip3 AS ZIP3,
+  CASE
+    WHEN COUNT_IF(r.code_population = r.largest_population) = 1
+    THEN MAX(CASE WHEN r.code_population = r.largest_population
+                  THEN r.ruca_code END)
+  END AS RUCA_MAJORITY_CODE,
+  ROUND(
+    100.0 * SUM(CASE WHEN r.ruca_code BETWEEN 1 AND 3
+                    THEN r.code_population ELSE 0 END)
+    / NULLIF(SUM(r.code_population), 0), 2
+  ) AS PCT_METROPOLITAN,
+  ROUND(
+    100.0 * SUM(CASE WHEN r.ruca_code BETWEEN 4 AND 10
+                    THEN r.code_population ELSE 0 END)
+    / NULLIF(SUM(r.code_population), 0), 2
+  ) AS PCT_RURAL
+FROM zip3s z
+LEFT JOIN ranked r ON z.zip3 = r.zip3
+GROUP BY z.zip3
+ORDER BY z.zip3;
