@@ -1,0 +1,10 @@
+{
+  "README.md": "5816dd4ef3989c899c342b248cebbc6447981e180fabc1a148420800b780a7b1",
+  "01_run_all.sql": "d26b20fe3ca5eb82c5cc554fee30d7bea911baf3bfbf1802207218f4ff4a4988",
+  "02_validation_queries.sql": "d0cbcf763cace6b589476b24ad394e7866549ba6556ca51edf6e4bc6b8529415",
+  "metrics_seed.csv": "8e44fd96113a2abe55134434cc2dcb386a8c1494b7656b21e208a918ca9d0051",
+  "seed_bootstrap_optional.sql": "a5528f7fa9e7a1ff9058e38d0be242fea74db683efcebe2db97a9bcdfcdce741",
+  "validation_summary.json": "58e316468bb3908214a555565c5cc02302bea84f6f594386d9f4b283ce61c760",
+  "validated_results.csv": "48345684578b499a030464dd899d490e04fdd517c2ef19c765f7b42616aa70c7",
+  "validation_980.csv": "b24ef07ffce23058ac1e5b6495478827419e016197659c5ea2ea3a908196b45b"
+}
