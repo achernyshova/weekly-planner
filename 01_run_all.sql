@@ -43,14 +43,23 @@ SELECT assert_true(
 
 -- COMMAND ----------
 
--- Read the CSV directly from your Volume; no Python or dbt is needed.
+-- read_files requires a literal path on some SQL warehouse versions.
+-- Assemble SQL from the configured path, then execute it with a literal argument.
 -- Keep CSV header field order unchanged. quote/escape preserve embedded JSON quotes.
-CREATE OR REPLACE TEMP VIEW _clh3_seed_raw AS
-SELECT * FROM read_files(
- clh_seed_path,format=>'csv',header=>true,multiLine=>true,
- quote=>'"',escape=>'"',mode=>'FAILFAST',
- schema=>'enabled STRING, source_column STRING, output_column STRING, geography STRING, method STRING, value_expression STRING, weight_expression STRING, valid_expression STRING, approximate STRING, weight_basis STRING, options_json STRING, notes STRING, worksheet_method STRING, worksheet_dependencies STRING'
+SET VAR clh_sql=CONCAT(
+ 'CREATE OR REPLACE TEMP VIEW _clh3_seed_raw AS SELECT * FROM read_files(',
+ CHR(39),
+ REPLACE(REPLACE(clh_seed_path,CHR(92),CONCAT(CHR(92),CHR(92))),CHR(39),CONCAT(CHR(92),CHR(39))),
+ CHR(39),', format=>',CHR(39),'csv',CHR(39),
+ ', header=>true, multiLine=>true, quote=>',CHR(39),CHR(34),CHR(39),
+ ', escape=>',CHR(39),CHR(34),CHR(39),
+ ', mode=>',CHR(39),'FAILFAST',CHR(39),
+ ', schema=>',CHR(39),'enabled STRING, source_column STRING, output_column STRING, geography STRING, method STRING, value_expression STRING, weight_expression STRING, valid_expression STRING, approximate STRING, weight_basis STRING, options_json STRING, notes STRING, worksheet_method STRING, worksheet_dependencies STRING',CHR(39),')'
 );
+
+-- COMMAND ----------
+
+EXECUTE IMMEDIATE clh_sql;
 
 -- COMMAND ----------
 
