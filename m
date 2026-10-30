@@ -1,7 +1,8 @@
 -- Databricks notebook source
 
--- Rebuilt 202-row seed: original instruction columns are preserved.
--- No assertions, audit pipeline, permanent writes, or silent enabled=0 filters.
+-- Readable external CSV seed: 202 retained input records, original headings and names.
+-- Upload metrics_seed_202.csv and check its quoted Volume path in cell 4.
+-- No embedded seed, decoding, year assertions, audit pipeline, or permanent writes.
 -- Inputs
 DECLARE OR REPLACE VARIABLE source_table STRING DEFAULT '110189_ctg_prod_exp.ds_public.clh_achrq_2022_zipcode';
 
@@ -15,12 +16,43 @@ DECLARE OR REPLACE VARIABLE statement_sql STRING;
 
 -- COMMAND ----------
 
--- Read all 202 retained instruction rows, including metadata. Keep the path literal.
+-- Load the readable 202-row CSV. Use this exact filename so an older seed is not read.
+-- Column names come from its header; all values are read as strings.
+-- The named projection below fails clearly if this is an incompatible older seed.
 CREATE OR REPLACE TEMP VIEW metric_seed_raw AS
-SELECT * FROM read_files(
- '/Volumes/110189_ctg_prod_exp/ds_public/self_service/metrics_seed.csv',
- format=>'csv', header=>true, multiLine=>true, escape=>'"',
- schema=>'`Data Source` STRING, `name` STRING, `label` STRING, `Variable Type (for aggregation from ZIP5 to ZIP3)` STRING, `Suggested Aggregation Method (from ZIP5 to ZIP3)` STRING, `Dependent Vars for aggregation` STRING, `Variable Rename for aggregation` STRING, `Keep in Mart` STRING, `source_column` STRING, `output_column` STRING, `row_role` STRING, `geography` STRING, `method` STRING, `value_expression` STRING, `weight_expression` STRING, `valid_expression` STRING, `approximate` STRING, `options_json` STRING, `execution_status` STRING, `implementation_note` STRING, `source_reference` STRING'
+SELECT
+ `Data Source`,
+ `name`,
+ `label`,
+ `Variable Type (for aggregation from ZIP5 to ZIP3)`,
+ `Suggested Aggregation Method (from ZIP5 to ZIP3)`,
+ `Dependent Vars for aggregation`,
+ `Variable Rename for aggregation`,
+ `Keep in Mart`,
+ `source_column`,
+ `output_column`,
+ `row_role`,
+ `geography`,
+ `method`,
+ `value_expression`,
+ `weight_expression`,
+ `valid_expression`,
+ `approximate`,
+ `options_json`,
+ `execution_status`,
+ `implementation_note`,
+ `source_reference`
+FROM read_files(
+ '/Volumes/110189_ctg_prod_exp/ds_public/self_service/metrics_seed_202.csv',
+ format => 'csv',
+ header => true,
+ sep => ',',
+ quote => '"',
+ escape => '"',
+ multiLine => true,
+ inferColumnTypes => false,
+ mode => 'FAILFAST',
+ schemaEvolutionMode => 'none'
 );
 
 -- COMMAND ----------
@@ -37,7 +69,7 @@ SELECT
  FROM_JSON(options_json,
   'STRUCT<quartile_outputs:ARRAY<STRING>,bins:ARRAY<STRUCT<lower:DOUBLE,upper:DOUBLE,count_expr:STRING>>>') AS options
 FROM metric_seed_raw
-WHERE TRIM(`Keep in Mart`)='1' AND row_role='metric';
+WHERE TRIM(`Keep in Mart`)='1' AND LOWER(TRIM(row_role))='metric';
 
 -- COMMAND ----------
 
@@ -128,8 +160,10 @@ WITH fragments AS (
    ')) e AS m WHERE s.ZIPCODE RLIKE ',CHR(39),'^[0-9]{5}$',CHR(39)) AS query
   FROM fragments GROUP BY chunk_id
  )
- SELECT CONCAT('CREATE OR REPLACE TEMP VIEW int_clh_metric_values AS ',
-  CONCAT_WS(' UNION ALL ',TRANSFORM(ARRAY_SORT(COLLECT_LIST(NAMED_STRUCT('chunk',chunk_id,'sql',query))),x->x.sql)))
+ SELECT CASE WHEN COUNT(*)=0 THEN
+  RAISE_ERROR('No calculation rules were loaded. Upload metrics_seed_202.csv from this package, check the seed path in cell 4, and Run All from cell 1.')
+ ELSE CONCAT('CREATE OR REPLACE TEMP VIEW int_clh_metric_values AS ',
+  CONCAT_WS(' UNION ALL ',TRANSFORM(ARRAY_SORT(COLLECT_LIST(NAMED_STRUCT('chunk',chunk_id,'sql',query))),x->x.sql))) END
  FROM chunks
 );
 
@@ -186,7 +220,7 @@ SELECT
  FROM_JSON(options_json,
   'STRUCT<quartile_outputs:ARRAY<STRING>,bins:ARRAY<STRUCT<lower:DOUBLE,upper:DOUBLE,count_expr:STRING>>>') AS options
 FROM metric_seed_raw
-WHERE TRIM(`Keep in Mart`)='1' AND row_role='metric'
+WHERE TRIM(`Keep in Mart`)='1' AND LOWER(TRIM(row_role))='metric'
 ),
 age_bins AS (
 SELECT s.output_column AS parent_metric,p AS bin_order,
