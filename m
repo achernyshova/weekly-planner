@@ -1,5 +1,7 @@
 -- Databricks notebook source
 
+-- Rebuilt 202-row seed: original instruction columns are preserved.
+-- No assertions, audit pipeline, permanent writes, or silent enabled=0 filters.
 -- Inputs
 DECLARE OR REPLACE VARIABLE source_table STRING DEFAULT '110189_ctg_prod_exp.ds_public.clh_achrq_2022_zipcode';
 
@@ -13,19 +15,18 @@ DECLARE OR REPLACE VARIABLE statement_sql STRING;
 
 -- COMMAND ----------
 
--- Seed
+-- Read all 202 retained instruction rows, including metadata. Keep the path literal.
 CREATE OR REPLACE TEMP VIEW metric_seed_raw AS
 SELECT * FROM read_files(
  '/Volumes/110189_ctg_prod_exp/ds_public/self_service/metrics_seed.csv',
- format=>'csv',
- header=>true,
- multiLine=>true,
- escape=>'"',
- schema=>'enabled STRING, source_column STRING, output_column STRING, geography STRING, method STRING, value_expression STRING, weight_expression STRING, valid_expression STRING, approximate STRING, weight_basis STRING, options_json STRING, notes STRING, worksheet_method STRING, worksheet_dependencies STRING'
+ format=>'csv', header=>true, multiLine=>true, escape=>'"',
+ schema=>'`Data Source` STRING, `name` STRING, `label` STRING, `Variable Type (for aggregation from ZIP5 to ZIP3)` STRING, `Suggested Aggregation Method (from ZIP5 to ZIP3)` STRING, `Dependent Vars for aggregation` STRING, `Variable Rename for aggregation` STRING, `Keep in Mart` STRING, `source_column` STRING, `output_column` STRING, `row_role` STRING, `geography` STRING, `method` STRING, `value_expression` STRING, `weight_expression` STRING, `valid_expression` STRING, `approximate` STRING, `options_json` STRING, `execution_status` STRING, `implementation_note` STRING, `source_reference` STRING'
 );
 
 -- COMMAND ----------
 
+-- Calculate metric rows; YEAR and source metadata have explicit separate roles.
+-- method=unresolved retains the output as NULL. See execution_status in the seed.
 CREATE OR REPLACE TEMP VIEW metric_rules AS
 SELECT
  TRIM(output_column) AS output_column,
@@ -36,7 +37,7 @@ SELECT
  FROM_JSON(options_json,
   'STRUCT<quartile_outputs:ARRAY<STRING>,bins:ARRAY<STRUCT<lower:DOUBLE,upper:DOUBLE,count_expr:STRING>>>') AS options
 FROM metric_seed_raw
-WHERE LOWER(TRIM(enabled)) IN ('1','true','yes');
+WHERE TRIM(`Keep in Mart`)='1' AND row_role='metric';
 
 -- COMMAND ----------
 
@@ -185,7 +186,7 @@ SELECT
  FROM_JSON(options_json,
   'STRUCT<quartile_outputs:ARRAY<STRING>,bins:ARRAY<STRUCT<lower:DOUBLE,upper:DOUBLE,count_expr:STRING>>>') AS options
 FROM metric_seed_raw
-WHERE LOWER(TRIM(enabled)) IN ('1','true','yes')
+WHERE TRIM(`Keep in Mart`)='1' AND row_role='metric'
 ),
 age_bins AS (
 SELECT s.output_column AS parent_metric,p AS bin_order,
@@ -273,9 +274,27 @@ WHERE d.method='svi_share';
 
 -- COMMAND ----------
 
+-- Preserve related source metadata as sorted distinct arrays, not arbitrary scalar values.
+-- Related means postal-prefix OR ZCTA-prefix, since the two metric families use different bases.
+CREATE OR REPLACE TEMP VIEW clh_zip3_source_metadata AS
+SELECT s.YEAR,p.ZIP3,
+ SORT_ARRAY(COLLECT_SET(s.`STATEFIPS`)) AS `STATEFIPS`,
+ SORT_ARRAY(COLLECT_SET(s.`ZIPCODE`)) AS `ZIPCODE`,
+ SORT_ARRAY(COLLECT_SET(s.`ZCTA`)) AS `ZCTA`,
+ SORT_ARRAY(COLLECT_SET(s.`STATE`)) AS `STATE`,
+ SORT_ARRAY(COLLECT_SET(s.`REGION`)) AS `REGION`,
+ SORT_ARRAY(COLLECT_SET(s.`TERRITORY`)) AS `TERRITORY`,
+ SORT_ARRAY(COLLECT_SET(s.`POINT_ZIP`)) AS `POINT_ZIP`
+FROM stg_clh_zipcode s
+LATERAL VIEW EXPLODE(ARRAY_DISTINCT(ARRAY(SUBSTRING(s.ZIPCODE,1,3),SUBSTRING(s.ZCTA,1,3)))) p AS ZIP3
+WHERE p.ZIP3 RLIKE '^[0-9]{3}$'
+GROUP BY s.YEAR,p.ZIP3;
+
+-- COMMAND ----------
+
 -- 5. clh_zip3_features
 SET VAR statement_sql = (
-SELECT CONCAT('CREATE OR REPLACE TEMP VIEW clh_zip3_features AS
+SELECT CONCAT('CREATE OR REPLACE TEMP VIEW clh_zip3_metric_features AS
 WITH zip3_keys AS (
 SELECT DISTINCT YEAR, SUBSTRING(ZIPCODE,1,3) AS ZIP3 FROM stg_clh_zipcode WHERE ZIPCODE RLIKE \'^[0-9]{5}$\'
 UNION
@@ -291,3 +310,17 @@ SELECT k.YEAR,k.ZIP3,',
 -- COMMAND ----------
 
 EXECUTE IMMEDIATE statement_sql;
+-- COMMAND ----------
+
+CREATE OR REPLACE TEMP VIEW clh_zip3_features AS
+SELECT f.*,
+ m.`STATEFIPS`,
+ m.`ZIPCODE`,
+ m.`ZCTA`,
+ m.`STATE`,
+ m.`REGION`,
+ m.`TERRITORY`,
+ m.`POINT_ZIP`
+FROM clh_zip3_metric_features f
+LEFT JOIN clh_zip3_source_metadata m
+ ON f.YEAR=m.YEAR AND f.ZIP3=m.ZIP3;
